@@ -73,7 +73,7 @@
 - [x] `FE-01` · 1 — Прибрати залишки шаблону (`App.css`, зайвий `<link>` в `index.html`, назва `front`), оновити Vite до 8 · _після: INF-02_
 - [x] `INF-03` · 2 — Спільний `tsconfig.base.json`, ESLint і Prettier на весь монорепо · _після: INF-02_
 - [x] `INF-03a` · 2 — Husky + lint-staged: pre-commit запускає lint-staged (ESLint/Prettier на staged файлах), pre-push запускає typecheck · _після: INF-03_
-- [ ] `INF-04` · 2 — `docker-compose.yml` з PostgreSQL 18 і volume для даних, `.env.example` · _після: INF-01_
+- [x] `INF-04` · 2 — `docker-compose.yml` з PostgreSQL 18 і volume для даних, `.env.example` · _після: INF-01_
 - [ ] `BE-01` · 3 — Каркас Express 5 на TypeScript (`tsx watch`); `GET /api/health` виконує `SELECT 1` через `pg` · _після: INF-02, INF-04_
 - [ ] `BE-02` · 1 — Конфіг з env, перевірений Zod: з битим `.env` сервер не стартує й пише, чого бракує · _після: BE-01_
 - [ ] `BE-03` · 1 — Логування запитів через pino · _після: BE-01_
