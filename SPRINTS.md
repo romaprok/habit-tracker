@@ -75,7 +75,7 @@
 - [x] `INF-03a` · 2 — Husky + lint-staged: pre-commit запускає lint-staged (ESLint/Prettier на staged файлах), pre-push запускає typecheck · _після: INF-03_
 - [x] `INF-04` · 2 — `docker-compose.yml` з PostgreSQL 18 і volume для даних, `.env.example` · _після: INF-01_
 - [x] `BE-01` · 3 — Каркас Express 5 на TypeScript (`tsx watch`); `GET /api/health` виконує `SELECT 1` через `pg` · _після: INF-02, INF-04_
-- [ ] `BE-02` · 1 — Конфіг з env, перевірений Zod: з битим `.env` сервер не стартує й пише, чого бракує · _після: BE-01_
+- [x] `BE-02` · 1 — Конфіг з env, перевірений Zod: з битим `.env` сервер не стартує й пише, чого бракує · _після: BE-01_
 - [ ] `BE-03` · 1 — Логування запитів через pino · _після: BE-01_
 - [ ] `FE-02` · 2 — Проксі Vite `/api` → Express; головна сторінка показує статус API і БД · _після: BE-01_
 - [ ] `INF-05` · 1 — Кореневі скрипти: `dev` (web і api разом), `lint`, `typecheck` · _після: BE-01, FE-02_
