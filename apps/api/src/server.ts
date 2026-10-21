@@ -1,8 +1,9 @@
 import express from 'express'
 import { pinoHttp } from 'pino-http'
-import { logger } from './logger.js'
-import { pool } from './db.js'
+
 import { config } from './config.js'
+import { pool } from './db.js'
+import { logger } from './logger.js'
 
 const app = express()
 const PORT = config.PORT
