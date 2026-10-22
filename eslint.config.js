@@ -1,12 +1,12 @@
 import js from '@eslint/js'
-import globals from 'globals'
+import { defineConfig, globalIgnores } from 'eslint/config'
+import importX from 'eslint-plugin-import-x'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
-import jsxA11y from 'eslint-plugin-jsx-a11y'
-import importX from 'eslint-plugin-import-x'
-import tseslint from 'typescript-eslint'
 import unusedImports from 'eslint-plugin-unused-imports'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default defineConfig([
   globalIgnores(['**/dist', '**/node_modules']),
@@ -16,7 +16,23 @@ export default defineConfig([
   importX.flatConfigs.typescript,
   {
     plugins: { 'unused-imports': unusedImports },
+    settings: { 'import-x/internal-regex': '^@habit-tracker/' },
     rules: {
+      'import-x/first': 'error',
+      'import-x/newline-after-import': 'error',
+      'import-x/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            ['parent', 'sibling', 'index'],
+          ],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
       '@typescript-eslint/no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [

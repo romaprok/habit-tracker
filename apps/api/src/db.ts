@@ -1,4 +1,5 @@
 import { Pool } from 'pg'
+
 import { config } from './config.js'
 import { logger } from './logger.js'
 
