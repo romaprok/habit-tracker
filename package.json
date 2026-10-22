@@ -12,6 +12,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^10.0.6",
     "eslint": "^9.39.1",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import-x": "^4.17.1",
@@ -29,6 +30,9 @@
     "vite": "^8.3.4"
   },
   "scripts": {
+    "dev": "concurrently --names api,web --prefix-colors blue,magenta --kill-others-on-fail \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "lint": "eslint .",
+    "typecheck": "tsc -b",
     "prepare": "husky"
   },
   "lint-staged": {
