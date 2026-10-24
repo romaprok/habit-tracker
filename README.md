@@ -1,99 +1,94 @@
 # Habit Tracker
 
-A full-stack application to track your daily habits.
+A full-stack habit tracker: create habits, check them off every day and watch your streaks grow.
 
-## Tech Stack
+This is a learning project for practicing React, TypeScript, Node.js, Express and PostgreSQL. It is built step by step in short sprints. See the [roadmap](ROADMAP.md) and the [sprint plan with progress](SPRINTS.md) (both in Ukrainian).
 
-### Frontend
+## Tech stack
 
-- **Framework**: [React.js](https://reactjs.org/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Routing**: [React Router](https://reactrouter.com/)
-- **API Communication**: [Axios](https://axios-http.com/)
+| Layer        | Now                                                | Planned                                              |
+| ------------ | -------------------------------------------------- | ---------------------------------------------------- |
+| Monorepo     | npm workspaces                                     | —                                                    |
+| Frontend     | React 19, Vite 8, Tailwind CSS 4                   | React Router, TanStack Query, React Hook Form        |
+| Backend      | Node.js 24, Express 5, TypeScript (run with `tsx`) | NestJS rewrite for comparison                        |
+| Validation   | Zod (environment config)                           | Shared Zod schemas in `packages/shared`              |
+| Database     | PostgreSQL 18 in Docker                            | Drizzle ORM and migrations                           |
+| Logging      | pino, pino-http                                    | —                                                    |
+| Code quality | ESLint 9, Prettier, Husky + lint-staged            | GitHub Actions CI                                    |
+| Tests        | —                                                  | Vitest, Supertest, React Testing Library, Playwright |
 
-### Backend
+## Project structure
 
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express.js](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/)
-- **ODM**: [Mongoose](https://mongoosejs.com/)
+```
+habit-tracker/
+├── apps/
+│   ├── api/              # Express API (TypeScript)
+│   └── web/              # React app (Vite + Tailwind)
+├── packages/
+│   └── shared/           # Shared Zod schemas and types
+├── docker-compose.yml    # PostgreSQL
+├── .env.example          # Environment variables template
+└── package.json          # npm workspaces and root scripts
+```
 
-### Development
-
-- **Linting**: [ESLint](https://eslint.org/)
-- **Formatting**: [Prettier](https://prettier.io/)
-- **Testing**: [Jest](https://jestjs.io/) & [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-
-## Features
-
-### Frontend
-
-- [ ] **User Authentication**: Secure user registration and login, with OAuth options (e.g., Google, GitHub).
-- [ ] **Habit Dashboard**: View, create, edit, and delete habits.
-- [ ] **Habit Tracking**: Mark habits as complete and view progress over time.
-- [ ] **Responsive Design**: Fully responsive and mobile-friendly interface.
-
-### Backend
-
-- [ ] **RESTful API**: A fully-featured API for managing users and habits.
-- [ ] **User Management**: Secure user authentication and authorization using JWT and OAuth 2.0.
-- [ ] **Database**: MongoDB for storing user and habit data.
-
-### Development & CI/CD
-
-- [ ] **Linting & Formatting**: ESLint and Prettier for clean, consistent code.
-- [ ] **Testing**: Unit and integration tests with Jest and React Testing Library.
-- [ ] **Continuous Integration**: Automated builds and tests using GitHub Actions.
-- [ ] **Continuous Deployment**: Automated deployments to a cloud platform.
-
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js (v14 or later)
-- npm or yarn
-- MongoDB
+- Node.js 24 (pinned in `.nvmrc`; with nvm, run `nvm use`)
+- Docker with Docker Compose v2
 
-### Installation
+### Setup
 
-1.  **Clone the repository**:
+```bash
+git clone https://github.com/romaprok/habit-tracker.git
+cd habit-tracker
+nvm use
+npm install
+cp .env.example .env
+docker compose up -d
+npm run dev
+```
 
-    ```bash
-    git clone https://github.com/your-username/habit-tracker.git
-    cd habit-tracker
-    ```
+Open http://localhost:5173. The page should show **API: ok · DB: ok**.
 
-2.  **Install frontend dependencies**:
+`npm run dev` starts the API and the web app together, and `Ctrl+C` stops both. Run all commands from the repository root.
 
-    ```bash
-    cd front
-    npm install
-    ```
+### Ports
 
-3.  **Install backend dependencies**:
+| Service        | Port                                                                                |
+| -------------- | ----------------------------------------------------------------------------------- |
+| Web app (Vite) | `5173`                                                                              |
+| API (Express)  | `3000`. In development the web app reaches it through the Vite proxy at `/api`      |
+| PostgreSQL     | `5433`, not the default `5432`, to avoid clashing with a locally installed Postgres |
 
-    ```bash
-    cd ../back
-    npm install
-    ```
+If a port is busy, change it in `.env`: `PORT`, `POSTGRES_PORT` and the port inside `DATABASE_URL`.
 
-### Running the Application
+## Scripts
 
-1.  **Start the backend server**:
+| Command                   | What it does                           |
+| ------------------------- | -------------------------------------- |
+| `npm run dev`             | Start the API and the web app together |
+| `npm run lint`            | Run ESLint on the whole monorepo       |
+| `npm run typecheck`       | Type-check all packages (`tsc -b`)     |
+| `npm run dev -w apps/api` | Start only the API                     |
+| `npm run dev -w apps/web` | Start only the web app                 |
 
-    ```bash
-    cd back
-    npm start
-    ```
+Git hooks are installed by `npm install`: `pre-commit` lints and formats staged files, `pre-push` runs the type check.
 
-2.  **Start the frontend development server**:
+## Environment variables
 
-    ```bash
-    cd front
-    npm run dev
-    ```
+Copy `.env.example` to `.env`. The API validates its variables with Zod on startup and refuses to start, with a clear message, if something is missing or invalid.
 
-The application will be available at `http://localhost:5173`.
+| Variable                                            | Used by         | Description                                                 |
+| --------------------------------------------------- | --------------- | ----------------------------------------------------------- |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Docker Compose  | Credentials and name of the database created on first start |
+| `POSTGRES_PORT`                                     | Docker Compose  | Host port for PostgreSQL                                    |
+| `DATABASE_URL`                                      | API             | PostgreSQL connection string                                |
+| `PORT`                                              | API, Vite proxy | API port                                                    |
+
+## API
+
+| Method | Path          | Response                                                                                          |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/health` | `200 {"api":"ok","db":"ok"}`, or `503 {"api":"ok","db":"error"}` when the database is unavailable |
