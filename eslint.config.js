@@ -2,6 +2,7 @@ import js from '@eslint/js'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import importX from 'eslint-plugin-import-x'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
+import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import unusedImports from 'eslint-plugin-unused-imports'
@@ -49,10 +50,21 @@ export default defineConfig([
   {
     files: ['apps/web/**/*.{ts,tsx}'],
     extends: [
+      react.configs.flat.recommended,
+      react.configs.flat['jsx-runtime'],
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
       jsxA11y.flatConfigs.recommended,
     ],
+    settings: { react: { version: 'detect' } },
+    rules: {
+      'react/prop-types': 'off',
+      'react/jsx-curly-brace-presence': [
+        'error',
+        { props: 'never', children: 'never' },
+      ],
+      'react/no-array-index-key': 'error',
+    },
     languageOptions: { ecmaVersion: 2020, globals: globals.browser },
   },
   {
