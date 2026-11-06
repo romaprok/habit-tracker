@@ -1,34 +1,12 @@
-import express from 'express'
-import { pinoHttp } from 'pino-http'
-
+import { createApp } from './app.js'
 import { config } from './config.js'
-import { pool } from './db.js'
+import { createPool } from './db.js'
 import { logger } from './logger.js'
 
-const app = express()
-const PORT = config.PORT
+const pool = createPool(config.DATABASE_URL)
+const app = createApp({ pool })
 
-app.use(
-  pinoHttp({
-    logger,
-    customLogLevel: (_req, res, err) => {
-      if (err || res.statusCode >= 500) return 'error'
-      if (res.statusCode >= 400) return 'warn'
-      return 'info'
-    },
-  }),
-)
-
-app.get('/api/health', async (_req, res) => {
-  try {
-    await pool.query('SELECT 1')
-    res.json({ api: 'ok', db: 'ok' })
-  } catch {
-    res.status(503).json({ api: 'ok', db: 'error' })
-  }
-})
-
-app.listen(PORT, (error) => {
+app.listen(config.PORT, (error) => {
   if (error) throw error
-  logger.info(`API listening on http://localhost:${PORT}`)
+  logger.info(`API listening on http://localhost:${config.PORT}`)
 })
