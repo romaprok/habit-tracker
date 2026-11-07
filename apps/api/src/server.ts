@@ -1,6 +1,6 @@
 import { createApp } from './app.js'
 import { config } from './config.js'
-import { createPool } from './db.js'
+import { createPool } from './db/client.js'
 import { logger } from './logger.js'
 
 const pool = createPool(config.DATABASE_URL)

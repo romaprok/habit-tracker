@@ -91,7 +91,7 @@
 
 - [x] `SH-01` · 1 — Zod-схема й тип `Habit` у `packages/shared` · _після: INF-02_
 - [x] `BE-04` · 2 — Шари `routes → controllers → services → repositories`; розділити `app.ts` і `server.ts`, щоб тести піднімали застосунок без порту · _після: BE-01_
-- [ ] `BE-05` · 5 — Drizzle: схема `users` і `habits`, перша міграція, скрипти `db:migrate` і `db:seed`; seed з demo-користувачем і 3–4 звичками · _після: BE-01_
+- [x] `BE-05` · 5 — Drizzle: схема `users` і `habits`, перша міграція, скрипти `db:migrate` і `db:seed`; seed з demo-користувачем і 3–4 звичками · _після: BE-01_
 - [ ] `BE-06` · 5 — Тести API: Vitest + Supertest, окрема тестова БД, очищення даних між тестами · _після: BE-04, BE-05_
 - [ ] `BE-07` · 2 — `GET /api/habits`: звички demo-користувача + тест · _після: SH-01, BE-05, BE-06_
 - [ ] `FE-03` · 2 — React Router: layout (шапка, навігація), маршрути `/` і `/habits`, сторінка 404 · _після: FE-02_
