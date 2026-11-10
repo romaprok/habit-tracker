@@ -2,9 +2,8 @@ import { eq } from 'drizzle-orm'
 
 import { config } from '../config.js'
 import { createDb, createPool } from './client.js'
+import { DEMO_USER_EMAIL as DEMO_EMAIL } from './demo.js'
 import { habits, users } from './schema.js'
-
-const DEMO_EMAIL = 'demo@habit-tracker.local'
 
 const pool = createPool(config.DATABASE_URL)
 const db = createDb(pool)

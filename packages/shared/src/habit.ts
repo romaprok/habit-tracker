@@ -9,4 +9,9 @@ export const HabitSchema = z.object({
   createdAt: z.iso.datetime(),
 })
 
+export const HabitListResponseSchema = z.object({
+  habits: z.array(HabitSchema),
+})
+
+export type HabitListResponse = z.infer<typeof HabitListResponseSchema>
 export type Habit = z.infer<typeof HabitSchema>
