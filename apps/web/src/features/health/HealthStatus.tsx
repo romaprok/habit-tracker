@@ -1,5 +1,5 @@
-import { StatusBadge } from './StatusBadge.tsx'
 import { useHealth } from './useHealth.ts'
+import { StatusBadge } from '../../components/StatusBadge.tsx'
 
 export const HealthStatus = () => {
   const { health, apiDown } = useHealth()

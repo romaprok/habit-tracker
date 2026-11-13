@@ -1,13 +1,21 @@
-import { HealthStatus } from './HealthStatus.tsx'
+import { BrowserRouter, Route, Routes } from 'react-router'
+
+import { Layout } from './components/Layout.tsx'
+import { HabitsPage } from './pages/HabitsPage.tsx'
+import { HomePage } from './pages/HomePage.tsx'
+import { NotFoundPage } from './pages/NotFoundPage.tsx'
 
 const App = () => {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <div className="rounded-xl bg-white p-6 shadow">
-        <h1 className="mb-2 text-xl font-semibold">Habit Tracker</h1>
-        <HealthStatus />
-      </div>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="habits" element={<HabitsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
