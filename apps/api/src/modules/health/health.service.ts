@@ -1,10 +1,10 @@
-import type { HealthRepository } from './health.repository.js'
+import type { Health } from '@habit-tracker/shared'
 
-export type HealthReport = { api: 'ok'; db: 'ok' | 'error' }
+import type { HealthRepository } from './health.repository.js'
 
 export function createHealthService(repository: HealthRepository) {
   return {
-    async check(): Promise<HealthReport> {
+    async check(): Promise<Health> {
       try {
         await repository.ping()
         return { api: 'ok', db: 'ok' }
