@@ -5,6 +5,8 @@ import { pinoHttp } from 'pino-http'
 import { createDb } from './db/client.js'
 import { logger } from './logger.js'
 import { createDemoUserMiddleware } from './middleware/demo-user.js'
+import { errorHandler } from './middleware/error-handler.js'
+import { notFound } from './middleware/not-found.js'
 import { createHabitsController } from './modules/habits/habits.controller.js'
 import { createHabitsRepository } from './modules/habits/habits.repository.js'
 import { createHabitsRouter } from './modules/habits/habits.router.js'
@@ -35,11 +37,16 @@ export function createApp({ pool }: AppDeps) {
   const healthService = createHealthService(healthRepository)
   const healthController = createHealthController(healthService)
   app.use('/api', createHealthRouter(healthController))
+
   const db = createDb(pool)
   const demoUser = createDemoUserMiddleware(createUsersRepository(db))
   const habitsController = createHabitsController(
     createHabitsService(createHabitsRepository(db)),
   )
   app.use('/api', createHabitsRouter(habitsController, demoUser))
+
+  app.use(notFound)
+  app.use(errorHandler)
+
   return app
 }
