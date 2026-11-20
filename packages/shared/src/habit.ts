@@ -15,3 +15,18 @@ export const HabitListResponseSchema = z.object({
 
 export type HabitListResponse = z.infer<typeof HabitListResponseSchema>
 export type Habit = z.infer<typeof HabitSchema>
+
+export const CreateHabitSchema = HabitSchema.pick({
+  name: true,
+  description: true,
+  color: true,
+}).partial({ description: true })
+
+export type CreateHabit = z.infer<typeof CreateHabitSchema>
+
+export const UpdateHabitSchema = CreateHabitSchema.partial().refine(
+  (data) => Object.keys(data).length > 0,
+  { message: 'At least one field must be provided' },
+)
+
+export type UpdateHabit = z.infer<typeof UpdateHabitSchema>
