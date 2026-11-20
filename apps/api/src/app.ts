@@ -22,6 +22,8 @@ export type AppDeps = { pool: Pool }
 export function createApp({ pool }: AppDeps) {
   const app = express()
 
+  app.use(express.json())
+
   app.use(
     pinoHttp({
       logger,
