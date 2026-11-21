@@ -107,7 +107,7 @@
 **Нове:** централізована обробка помилок, валідація запитів, контрольовані форми.
 
 - [x] `BE-08` · 3 — Обробка помилок: клас `AppError`, централізований middleware, 404 для невідомих маршрутів, формат `{ error: { code, message, fields? } }` · _після: BE-04_
-- [ ] `SH-02` · 1 — Схеми `CreateHabit` і `UpdateHabit` · _після: SH-01_
+- [x] `SH-02` · 1 — Схеми `CreateHabit` і `UpdateHabit` · _після: SH-01_
 - [ ] `BE-09` · 2 — Middleware `validate` для body, params і query на Zod · _після: BE-08, SH-02_
 - [ ] `BE-10` · 5 — `POST /api/habits`, `GET`, `PATCH` і `DELETE /api/habits/:id` + тести, зокрема на 400 і 404 · _після: BE-07, BE-09_
 - [ ] `BE-11` · 1 — Колекція запитів: `.http`-файли або Bruno · _після: BE-10_
