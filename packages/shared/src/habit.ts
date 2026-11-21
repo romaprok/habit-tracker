@@ -14,6 +14,12 @@ export const HabitListResponseSchema = z.object({
 })
 
 export type HabitListResponse = z.infer<typeof HabitListResponseSchema>
+
+export const HabitResponseSchema = z.object({
+  habit: HabitSchema,
+})
+
+export type HabitResponse = z.infer<typeof HabitResponseSchema>
 export type Habit = z.infer<typeof HabitSchema>
 
 export const CreateHabitSchema = HabitSchema.pick({
