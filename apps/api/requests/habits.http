@@ -1,0 +1,73 @@
+# Habits API. Run requests from top to bottom: "Create" stores the new id
+# in the global variable habitId, the requests below it reuse it.
+# Environment: pick "dev" (API directly) or "via-vite-proxy" in the run selector.
+
+### List habits of the current (demo) user
+GET {{baseUrl}}/habits
+
+### Create a habit
+POST {{baseUrl}}/habits
+Content-Type: application/json
+
+{
+  "name": "Drink water",
+  "description": "8 glasses a day",
+  "color": "#0EA5E9"
+}
+
+> {%
+  client.test("Habit created", () => {
+    client.assert(response.status === 201, "Expected 201, got " + response.status)
+  })
+  client.global.set("habitId", response.body.habit.id)
+%}
+
+### Get the created habit
+GET {{baseUrl}}/habits/{{habitId}}
+
+### Rename it (PATCH changes only the fields you send)
+PATCH {{baseUrl}}/habits/{{habitId}}
+Content-Type: application/json
+
+{
+  "name": "Drink 2 liters of water"
+}
+
+### Delete it: 204 without a body
+DELETE {{baseUrl}}/habits/{{habitId}}
+
+### After delete: 404
+GET {{baseUrl}}/habits/{{habitId}}
+
+
+### ---------- Error cases ----------
+
+### 400: empty name and invalid color, errors per field
+POST {{baseUrl}}/habits
+Content-Type: application/json
+
+{
+  "name": "",
+  "color": "red"
+}
+
+### 400: PATCH with an empty body (at least one field is required)
+PATCH {{baseUrl}}/habits/0195f1a2-7c3e-7a00-8000-000000000001
+Content-Type: application/json
+
+{}
+
+### 400: id is not a UUID
+GET {{baseUrl}}/habits/123
+
+### 404: habit does not exist (or belongs to another user)
+GET {{baseUrl}}/habits/0195f1a2-7c3e-7a00-8000-000000000001
+
+### 400: malformed JSON
+POST {{baseUrl}}/habits
+Content-Type: application/json
+
+{"name":
+
+### 404: unknown route
+GET {{baseUrl}}/nope
