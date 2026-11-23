@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { HabitResponseSchema, type Habit } from '@habit-tracker/shared'
 
+import { habitKeys } from './habit-keys.ts'
 import { api, ApiError } from '../../lib/api-client.ts'
 
 export type HabitState =
@@ -10,28 +11,26 @@ export type HabitState =
   | { status: 'error'; message: string }
   | { status: 'success'; habit: Habit }
 
-export function useHabit(id: string) {
-  const [state, setState] = useState<HabitState>({ status: 'loading' })
+function isNotFound(err: unknown) {
+  return err instanceof ApiError && (err.status === 404 || err.status === 400)
+}
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    api
-      .get(`/habits/${id}`, HabitResponseSchema, { signal: controller.signal })
-      .then(({ habit }) => setState({ status: 'success', habit }))
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return
-        const notFound =
-          err instanceof ApiError && (err.status === 404 || err.status === 400)
-        setState(
-          notFound
-            ? { status: 'not-found' }
-            : { status: 'error', message: 'Could not load the habit.' },
-        )
+export function useHabit(id: string): HabitState {
+  const query = useQuery({
+    queryKey: habitKeys.detail(id),
+    queryFn: async ({ signal }) => {
+      const { habit } = await api.get(`/habits/${id}`, HabitResponseSchema, {
+        signal,
       })
+      return habit
+    },
+  })
 
-    return () => controller.abort()
-  }, [id])
-
-  return state
+  if (query.status === 'pending') return { status: 'loading' }
+  if (query.status === 'error') {
+    return isNotFound(query.error)
+      ? { status: 'not-found' }
+      : { status: 'error', message: 'Could not load the habit.' }
+  }
+  return { status: 'success', habit: query.data }
 }
