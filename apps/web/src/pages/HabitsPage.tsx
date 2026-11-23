@@ -1,11 +1,25 @@
+import { useState } from 'react'
+
+import type { Habit } from '@habit-tracker/shared'
+
 import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
 
-type HabitsContentProps = { state: HabitsState; onRetry: () => void }
+type HabitsContentProps = {
+  state: HabitsState
+  deletingId: string | null
+  onRetry: () => void
+  onDelete: (habit: Habit) => void
+}
 
-function HabitsContent({ state, onRetry }: HabitsContentProps) {
+function HabitsContent({
+  state,
+  deletingId,
+  onRetry,
+  onDelete,
+}: HabitsContentProps) {
   switch (state.status) {
     case 'loading':
       return (
@@ -34,7 +48,12 @@ function HabitsContent({ state, onRetry }: HabitsContentProps) {
       return (
         <ul className="space-y-3">
           {state.habits.map((habit) => (
-            <HabitCard key={habit.id} habit={habit} />
+            <HabitCard
+              key={habit.id}
+              habit={habit}
+              deleting={deletingId === habit.id}
+              onDelete={onDelete}
+            />
           ))}
         </ul>
       )
@@ -44,7 +63,22 @@ function HabitsContent({ state, onRetry }: HabitsContentProps) {
 }
 
 export function HabitsPage() {
-  const { state, retry } = useHabits()
+  const { state, retry, remove } = useHabits()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  async function deleteHabit(habit: Habit) {
+    if (!window.confirm(`Delete "${habit.name}"? This cannot be undone.`))
+      return
+
+    setDeletingId(habit.id)
+    try {
+      await remove(habit.id)
+    } catch {
+      window.alert('Could not delete the habit. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <section>
@@ -52,7 +86,12 @@ export function HabitsPage() {
         <h1 className="text-xl font-semibold">Habits</h1>
         <TextLink to="/habits/new">New habit</TextLink>
       </div>
-      <HabitsContent state={state} onRetry={retry} />
+      <HabitsContent
+        state={state}
+        deletingId={deletingId}
+        onRetry={retry}
+        onDelete={deleteHabit}
+      />
     </section>
   )
 }

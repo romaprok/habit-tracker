@@ -89,4 +89,8 @@ export const api = {
   ) {
     return parse(parser, await send(path, withJson('PATCH', data, options)))
   },
+
+  async delete(path: string, options: RequestOptions = {}): Promise<void> {
+    await send(path, { method: 'DELETE', signal: options.signal })
+  },
 }

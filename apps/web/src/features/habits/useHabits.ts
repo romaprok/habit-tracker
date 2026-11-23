@@ -39,5 +39,17 @@ export function useHabits() {
     setAttempt((n) => n + 1)
   }
 
-  return { state, retry }
+  const remove = async (id: string) => {
+    await api.delete(`/habits/${id}`)
+    setState((current) =>
+      current.status === 'success'
+        ? {
+            ...current,
+            habits: current.habits.filter((habit) => habit.id !== id),
+          }
+        : current,
+    )
+  }
+
+  return { state, retry, remove }
 }
