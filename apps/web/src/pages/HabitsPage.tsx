@@ -84,7 +84,7 @@ export function HabitsPage() {
 
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">Habits</h1>
         <TextLink to="/habits/new">New habit</TextLink>
       </div>

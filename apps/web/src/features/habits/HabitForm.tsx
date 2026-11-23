@@ -77,7 +77,7 @@ function Field({ name, label, error, children }: FieldProps) {
 }
 
 const INPUT_CLASS =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 aria-invalid:border-red-500'
+  'w-full rounded-lg border border-slate-300 px-3 py-2 text-base aria-invalid:border-red-500'
 
 export function HabitForm({
   initialValues = EMPTY_VALUES,
@@ -117,7 +117,7 @@ export function HabitForm({
     <form
       noValidate
       onSubmit={submit}
-      className="space-y-4 rounded-xl bg-white p-6 shadow"
+      className="space-y-4 rounded-xl bg-white p-4 shadow sm:p-6"
     >
       <Field name="name" label="Name" error={errors.name?.message}>
         {(a11y) => (
@@ -146,7 +146,7 @@ export function HabitForm({
             {...a11y}
             {...register('color')}
             type="color"
-            className="h-10 w-16 cursor-pointer rounded border border-slate-300"
+            className="h-11 w-20 cursor-pointer rounded border border-slate-300"
           />
         )}
       </Field>
@@ -157,7 +157,11 @@ export function HabitForm({
         </p>
       )}
 
-      <Button type="submit" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full sm:w-auto"
+      >
         {isSubmitting ? 'Saving…' : submitLabel}
       </Button>
     </form>
