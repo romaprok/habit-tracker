@@ -2,6 +2,8 @@ type Parser<T> = { parse: (data: unknown) => T }
 
 type RequestOptions = { signal?: AbortSignal }
 
+type RawResponse = { status: number; body: unknown }
+
 export class ApiError extends Error {
   readonly status: number
   readonly body: unknown
@@ -16,11 +18,7 @@ export class ApiError extends Error {
 
 const BASE_URL = '/api'
 
-async function request<T>(
-  path: string,
-  parser: Parser<T>,
-  init: RequestInit,
-): Promise<T> {
+async function send(path: string, init: RequestInit): Promise<RawResponse> {
   let res: Response
   try {
     res = await fetch(`${BASE_URL}${path}`, init)
@@ -42,15 +40,44 @@ async function request<T>(
     )
   }
 
+  return { status: res.status, body }
+}
+
+function parse<T>(parser: Parser<T>, { status, body }: RawResponse): T {
   try {
     return parser.parse(body)
   } catch {
-    throw new ApiError(res.status, 'Unexpected response format', body)
+    throw new ApiError(status, 'Unexpected response format', body)
+  }
+}
+
+function withJson(
+  method: string,
+  data: unknown,
+  options: RequestOptions,
+): RequestInit {
+  return {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    signal: options.signal,
   }
 }
 
 export const api = {
-  get<T>(path: string, parser: Parser<T>, options: RequestOptions = {}) {
-    return request(path, parser, { method: 'GET', signal: options.signal })
+  async get<T>(path: string, parser: Parser<T>, options: RequestOptions = {}) {
+    return parse(
+      parser,
+      await send(path, { method: 'GET', signal: options.signal }),
+    )
+  },
+
+  async post<T>(
+    path: string,
+    data: unknown,
+    parser: Parser<T>,
+    options: RequestOptions = {},
+  ) {
+    return parse(parser, await send(path, withJson('POST', data, options)))
   },
 }

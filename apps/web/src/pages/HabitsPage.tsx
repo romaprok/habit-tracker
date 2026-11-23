@@ -1,3 +1,5 @@
+import { Button } from '../components/Button.tsx'
+import { TextLink } from '../components/TextLink.tsx'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
 
@@ -15,20 +17,17 @@ function HabitsContent({ state, onRetry }: HabitsContentProps) {
       return (
         <div role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
           <p className="mb-2">{state.message}</p>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="rounded-lg bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-          >
+          <Button variant="danger" onClick={onRetry}>
             Try again
-          </button>
+          </Button>
         </div>
       )
     case 'success':
       if (state.habits.length === 0) {
         return (
           <p className="text-slate-500">
-            No habits yet. Run <code>npm run db:seed</code> to add demo habits.
+            No habits yet.{' '}
+            <TextLink to="/habits/new">Create your first habit</TextLink>
           </p>
         )
       }
@@ -49,7 +48,10 @@ export function HabitsPage() {
 
   return (
     <section>
-      <h1 className="mb-4 text-xl font-semibold">Habits</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Habits</h1>
+        <TextLink to="/habits/new">New habit</TextLink>
+      </div>
       <HabitsContent state={state} onRetry={retry} />
     </section>
   )
