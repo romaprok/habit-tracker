@@ -6,6 +6,7 @@ import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
+import { ApiError } from '../lib/api-client.ts'
 
 type HabitsContentProps = {
   state: HabitsState
@@ -73,8 +74,12 @@ export function HabitsPage() {
     setDeletingId(habit.id)
     try {
       await remove(habit.id)
-    } catch {
-      window.alert('Could not delete the habit. Please try again.')
+    } catch (err) {
+      window.alert(
+        err instanceof ApiError
+          ? `Could not delete the habit: ${err.message}`
+          : 'Could not delete the habit. Please try again.',
+      )
     } finally {
       setDeletingId(null)
     }

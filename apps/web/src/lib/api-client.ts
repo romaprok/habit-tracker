@@ -1,3 +1,5 @@
+import { ErrorResponseSchema, type ErrorCode } from '@habit-tracker/shared'
+
 type Parser<T> = { parse: (data: unknown) => T }
 
 type RequestOptions = { signal?: AbortSignal }
@@ -7,12 +9,17 @@ type RawResponse = { status: number; body: unknown }
 export class ApiError extends Error {
   readonly status: number
   readonly body: unknown
+  readonly code: ErrorCode | null
+  readonly fields: Record<string, string[]>
 
   constructor(status: number, message: string, body?: unknown) {
-    super(message)
+    const server = ErrorResponseSchema.safeParse(body)
+    super(server.success ? server.data.error.message : message)
     this.name = 'ApiError'
     this.status = status
     this.body = body
+    this.code = server.success ? server.data.error.code : null
+    this.fields = server.success ? (server.data.error.fields ?? {}) : {}
   }
 }
 

@@ -40,7 +40,11 @@ export function useHabits() {
   }
 
   const remove = async (id: string) => {
-    await api.delete(`/habits/${id}`)
+    try {
+      await api.delete(`/habits/${id}`)
+    } catch (err) {
+      if (!(err instanceof ApiError && err.status === 404)) throw err
+    }
     setState((current) =>
       current.status === 'success'
         ? {

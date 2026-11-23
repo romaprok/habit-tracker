@@ -8,6 +8,7 @@ import {
 import { CreateHabitSchema, type CreateHabit } from '@habit-tracker/shared'
 
 import { Button } from '../../components/Button.tsx'
+import { ApiError } from '../../lib/api-client.ts'
 
 export type HabitFormValues = {
   name: string
@@ -49,6 +50,22 @@ function toFieldErrors(issues: Issue[]): FieldErrors {
     }
   }
   return errors
+}
+
+function toServerFieldErrors(fields: Record<string, string[]>): FieldErrors {
+  return toFieldErrors(
+    Object.entries(fields).flatMap(([field, messages]) =>
+      messages.map((message) => ({ path: [field], message })),
+    ),
+  )
+}
+
+function toFormError(err: unknown) {
+  if (err instanceof ApiError && err.status === 0) {
+    return 'Cannot reach the server. Check your connection and try again.'
+  }
+  if (err instanceof ApiError) return err.message
+  return 'Could not save the habit. Please try again.'
 }
 
 type InputA11yProps = {
@@ -119,8 +136,11 @@ export function HabitForm({
     setSubmitting(true)
     try {
       await onSubmit(result.data)
-    } catch {
-      setFormError('Could not save the habit. Please try again.')
+    } catch (err) {
+      const serverErrors =
+        err instanceof ApiError ? toServerFieldErrors(err.fields) : {}
+      if (Object.keys(serverErrors).length > 0) setErrors(serverErrors)
+      else setFormError(toFormError(err))
     } finally {
       setSubmitting(false)
     }

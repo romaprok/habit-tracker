@@ -41,6 +41,14 @@ export function EditHabitPage() {
           Loading habit…
         </p>
       )}
+      {state.status === 'not-found' && (
+        <div className="rounded-xl bg-white p-6 text-center shadow">
+          <p className="mb-2 font-medium">Habit not found</p>
+          <p className="text-slate-500">
+            It may have been deleted, or the link is wrong.
+          </p>
+        </div>
+      )}
       {state.status === 'error' && (
         <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
           {state.message}
