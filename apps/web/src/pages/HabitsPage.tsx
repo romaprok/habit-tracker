@@ -1,10 +1,9 @@
-import { useState } from 'react'
-
 import type { Habit } from '@habit-tracker/shared'
 
 import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
+import { useDeleteHabit } from '../features/habits/mutations.ts'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
 import { ApiError } from '../lib/api-client.ts'
 
@@ -64,24 +63,22 @@ function HabitsContent({
 }
 
 export function HabitsPage() {
-  const { state, retry, remove } = useHabits()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { state, retry } = useHabits()
+  const deleteMutation = useDeleteHabit()
+  const deletingId = deleteMutation.isPending ? deleteMutation.variables : null
 
   async function deleteHabit(habit: Habit) {
     if (!window.confirm(`Delete "${habit.name}"? This cannot be undone.`))
       return
 
-    setDeletingId(habit.id)
     try {
-      await remove(habit.id)
+      await deleteMutation.mutateAsync(habit.id)
     } catch (err) {
       window.alert(
         err instanceof ApiError
           ? `Could not delete the habit: ${err.message}`
           : 'Could not delete the habit. Please try again.',
       )
-    } finally {
-      setDeletingId(null)
     }
   }
 

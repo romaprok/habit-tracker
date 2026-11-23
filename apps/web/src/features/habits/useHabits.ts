@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { HabitListResponseSchema, type Habit } from '@habit-tracker/shared'
 
@@ -18,7 +18,6 @@ function toErrorMessage(err: unknown) {
 }
 
 export function useHabits() {
-  const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: habitKeys.all,
     queryFn: async ({ signal }) => {
@@ -40,17 +39,5 @@ export function useHabits() {
     void query.refetch()
   }
 
-  const remove = async (id: string) => {
-    try {
-      await api.delete(`/habits/${id}`)
-    } catch (err) {
-      if (!(err instanceof ApiError && err.status === 404)) throw err
-    }
-    queryClient.setQueryData<Habit[]>(habitKeys.all, (habits) =>
-      habits?.filter((habit) => habit.id !== id),
-    )
-    queryClient.removeQueries({ queryKey: habitKeys.detail(id) })
-  }
-
-  return { state, retry, remove }
+  return { state, retry }
 }

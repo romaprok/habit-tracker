@@ -125,7 +125,7 @@
 **Нове:** TanStack Query, React Hook Form, mobile-first верстка.
 
 - [x] `FE-10` · 3 — TanStack Query: `QueryClient`, хуки `useHabits` і `useHabit`, DevTools · _після: FE-05_
-- [ ] `FE-11` · 3 — Мутації створення, зміни й видалення з інвалідацією кешу; прибрати ручні `useEffect` · _після: FE-10, FE-07, FE-08_
+- [x] `FE-11` · 3 — Мутації створення, зміни й видалення з інвалідацією кешу; прибрати ручні `useEffect` · _після: FE-10, FE-07, FE-08_
 - [ ] `FE-12` · 3 — Форми на React Hook Form + `zodResolver` · _після: FE-07_
 - [ ] `FE-13` · 3 — Адаптивна верстка mobile-first: навігація, список, форми · _після: FE-05_
 

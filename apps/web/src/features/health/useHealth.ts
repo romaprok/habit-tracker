@@ -1,33 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { HealthSchema, type Health } from '@habit-tracker/shared'
 
 import { api, ApiError } from '../../lib/api-client.ts'
 
+async function fetchHealth(signal: AbortSignal): Promise<Health> {
+  try {
+    return await api.get('/health', HealthSchema, { signal })
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 503) {
+      return HealthSchema.parse(err.body)
+    }
+    throw err
+  }
+}
+
 export const useHealth = () => {
-  const [health, setHealth] = useState<Health | null>(null)
-  const [apiDown, setApiDown] = useState(false)
+  const query = useQuery({
+    queryKey: ['health'],
+    queryFn: ({ signal }) => fetchHealth(signal),
+    retry: false,
+  })
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    api
-      .get('/health', HealthSchema, { signal: controller.signal })
-      .then(setHealth)
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return
-
-        const degraded =
-          err instanceof ApiError && err.status === 503
-            ? HealthSchema.safeParse(err.body)
-            : null
-
-        if (degraded?.success) setHealth(degraded.data)
-        else setApiDown(true)
-      })
-
-    return () => controller.abort()
-  }, [])
-
-  return { health, apiDown }
+  return { health: query.data ?? null, apiDown: query.isError }
 }

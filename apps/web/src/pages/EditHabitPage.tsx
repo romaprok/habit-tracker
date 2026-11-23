@@ -1,18 +1,14 @@
 import { useNavigate, useParams } from 'react-router'
 
-import {
-  HabitResponseSchema,
-  type CreateHabit,
-  type Habit,
-} from '@habit-tracker/shared'
+import type { CreateHabit, Habit } from '@habit-tracker/shared'
 
 import { TextLink } from '../components/TextLink.tsx'
 import {
   HabitForm,
   type HabitFormValues,
 } from '../features/habits/HabitForm.tsx'
+import { useUpdateHabit } from '../features/habits/mutations.ts'
 import { useHabit } from '../features/habits/useHabit.ts'
-import { api } from '../lib/api-client.ts'
 
 function toFormValues(habit: Habit): HabitFormValues {
   return {
@@ -26,9 +22,10 @@ export function EditHabitPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const state = useHabit(id)
+  const updateHabit = useUpdateHabit(id)
 
   async function saveHabit(input: CreateHabit) {
-    await api.patch(`/habits/${id}`, input, HabitResponseSchema)
+    await updateHabit.mutateAsync(input)
     navigate('/habits')
   }
 
