@@ -1,0 +1,2 @@
+### Health check: 200 when the database is up, 503 when it is down
+GET {{baseUrl}}/health
