@@ -80,4 +80,13 @@ export const api = {
   ) {
     return parse(parser, await send(path, withJson('POST', data, options)))
   },
+
+  async patch<T>(
+    path: string,
+    data: unknown,
+    parser: Parser<T>,
+    options: RequestOptions = {},
+  ) {
+    return parse(parser, await send(path, withJson('PATCH', data, options)))
+  },
 }
