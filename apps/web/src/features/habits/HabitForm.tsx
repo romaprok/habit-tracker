@@ -1,9 +1,6 @@
-import {
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-  type ReactNode,
-} from 'react'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import type { ReactNode } from 'react'
+import { useForm } from 'react-hook-form'
 
 import { CreateHabitSchema, type CreateHabit } from '@habit-tracker/shared'
 
@@ -17,8 +14,6 @@ export type HabitFormValues = {
 }
 
 type FieldName = keyof HabitFormValues
-type FieldErrors = Partial<Record<FieldName, string>>
-type Issue = { path: PropertyKey[]; message: string }
 
 type HabitFormProps = {
   initialValues?: HabitFormValues
@@ -32,32 +27,10 @@ const EMPTY_VALUES: HabitFormValues = {
   color: '#3B82F6',
 }
 
-function toInput(values: HabitFormValues) {
-  const description = values.description.trim()
-  return {
-    name: values.name,
-    description: description === '' ? null : description,
-    color: values.color,
-  }
-}
+const FIELD_NAMES: FieldName[] = ['name', 'description', 'color']
 
-function toFieldErrors(issues: Issue[]): FieldErrors {
-  const errors: FieldErrors = {}
-  for (const issue of issues) {
-    const field = issue.path[0]
-    if (field === 'name' || field === 'description' || field === 'color') {
-      errors[field] ??= issue.message
-    }
-  }
-  return errors
-}
-
-function toServerFieldErrors(fields: Record<string, string[]>): FieldErrors {
-  return toFieldErrors(
-    Object.entries(fields).flatMap(([field, messages]) =>
-      messages.map((message) => ({ path: [field], message })),
-    ),
-  )
+function isFieldName(key: string): key is FieldName {
+  return (FIELD_NAMES as string[]).includes(key)
 }
 
 function toFormError(err: unknown) {
@@ -111,94 +84,81 @@ export function HabitForm({
   submitLabel,
   onSubmit,
 }: HabitFormProps) {
-  const [values, setValues] = useState(initialValues)
-  const [errors, setErrors] = useState<FieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<HabitFormValues, unknown, CreateHabit>({
+    resolver: standardSchemaResolver(CreateHabitSchema),
+    defaultValues: initialValues,
+  })
 
-  const update =
-    (field: FieldName) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setValues((current) => ({ ...current, [field]: event.target.value }))
-    }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const result = CreateHabitSchema.safeParse(toInput(values))
-    if (!result.success) {
-      setErrors(toFieldErrors(result.error.issues))
-      return
-    }
-
-    setErrors({})
-    setFormError(null)
-    setSubmitting(true)
+  const submit = handleSubmit(async (data) => {
+    const description = data.description?.trim()
     try {
-      await onSubmit(result.data)
+      await onSubmit({ ...data, description: description || null })
     } catch (err) {
-      const serverErrors =
-        err instanceof ApiError ? toServerFieldErrors(err.fields) : {}
-      if (Object.keys(serverErrors).length > 0) setErrors(serverErrors)
-      else setFormError(toFormError(err))
-    } finally {
-      setSubmitting(false)
+      const serverFields = err instanceof ApiError ? err.fields : {}
+      let shownUnderFields = 0
+      for (const [key, messages] of Object.entries(serverFields)) {
+        if (isFieldName(key) && messages[0]) {
+          setError(key, { type: 'server', message: messages[0] })
+          shownUnderFields += 1
+        }
+      }
+      if (shownUnderFields === 0) {
+        setError('root.server', { message: toFormError(err) })
+      }
     }
-  }
+  })
 
   return (
     <form
       noValidate
-      onSubmit={handleSubmit}
+      onSubmit={submit}
       className="space-y-4 rounded-xl bg-white p-6 shadow"
     >
-      <Field name="name" label="Name" error={errors.name}>
+      <Field name="name" label="Name" error={errors.name?.message}>
         {(a11y) => (
-          <input
-            {...a11y}
-            value={values.name}
-            onChange={update('name')}
-            className={INPUT_CLASS}
-          />
+          <input {...a11y} {...register('name')} className={INPUT_CLASS} />
         )}
       </Field>
 
       <Field
         name="description"
         label="Description (optional)"
-        error={errors.description}
+        error={errors.description?.message}
       >
         {(a11y) => (
           <textarea
             {...a11y}
+            {...register('description')}
             rows={3}
-            value={values.description}
-            onChange={update('description')}
             className={INPUT_CLASS}
           />
         )}
       </Field>
 
-      <Field name="color" label="Color" error={errors.color}>
+      <Field name="color" label="Color" error={errors.color?.message}>
         {(a11y) => (
           <input
             {...a11y}
+            {...register('color')}
             type="color"
-            value={values.color}
-            onChange={update('color')}
             className="h-10 w-16 cursor-pointer rounded border border-slate-300"
           />
         )}
       </Field>
 
-      {formError && (
+      {errors.root?.server && (
         <p role="alert" className="text-sm text-red-600">
-          {formError}
+          {errors.root.server.message}
         </p>
       )}
 
-      <Button type="submit" disabled={submitting}>
-        {submitting ? 'Saving…' : submitLabel}
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Saving…' : submitLabel}
       </Button>
     </form>
   )
