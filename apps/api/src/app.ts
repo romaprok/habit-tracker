@@ -7,6 +7,10 @@ import { logger } from './logger.js'
 import { createDemoUserMiddleware } from './middleware/demo-user.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
+import { createChecksController } from './modules/checks/checks.controller.js'
+import { createChecksRepository } from './modules/checks/checks.repository.js'
+import { createChecksRouter } from './modules/checks/checks.router.js'
+import { createChecksService } from './modules/checks/checks.service.js'
 import { createHabitsController } from './modules/habits/habits.controller.js'
 import { createHabitsRepository } from './modules/habits/habits.repository.js'
 import { createHabitsRouter } from './modules/habits/habits.router.js'
@@ -41,11 +45,23 @@ export function createApp({ pool }: AppDeps) {
   app.use('/api', createHealthRouter(healthController))
 
   const db = createDb(pool)
-  const demoUser = createDemoUserMiddleware(createUsersRepository(db))
+  const usersRepository = createUsersRepository(db)
+  const habitsRepository = createHabitsRepository(db)
+  const demoUser = createDemoUserMiddleware(usersRepository)
+
   const habitsController = createHabitsController(
-    createHabitsService(createHabitsRepository(db)),
+    createHabitsService(habitsRepository),
   )
   app.use('/api', createHabitsRouter(habitsController, demoUser))
+
+  const checksController = createChecksController(
+    createChecksService({
+      checks: createChecksRepository(db),
+      habits: habitsRepository,
+      users: usersRepository,
+    }),
+  )
+  app.use('/api', createChecksRouter(checksController, demoUser))
 
   app.use(notFound)
   app.use(errorHandler)

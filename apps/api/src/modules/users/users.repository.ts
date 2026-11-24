@@ -9,6 +9,11 @@ export function createUsersRepository(db: Db) {
       const [user] = await db.select().from(users).where(eq(users.email, email))
       return user ?? null
     },
+
+    async findById(id: string) {
+      const [user] = await db.select().from(users).where(eq(users.id, id))
+      return user ?? null
+    },
   }
 }
 
