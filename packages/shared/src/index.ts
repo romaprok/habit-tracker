@@ -1,3 +1,4 @@
+export * from './auth.js'
 export * from './check.js'
 export * from './error.js'
 export * from './habit.js'
