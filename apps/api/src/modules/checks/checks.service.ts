@@ -1,3 +1,5 @@
+import type { Check } from '@habit-tracker/shared'
+
 import type { ChecksRepository } from './checks.repository.js'
 import { NotFoundError, ValidationError } from '../../errors/app-error.js'
 import type { HabitsRepository } from '../habits/habits.repository.js'
@@ -24,6 +26,10 @@ export function createChecksService({ checks, habits, users }: Deps) {
         })
       }
       await checks.add(habitId, date)
+    },
+
+    listInRange(userId: string, from: string, to: string): Promise<Check[]> {
+      return checks.findInRange(userId, from, to)
     },
 
     async uncheck(

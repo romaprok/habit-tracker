@@ -1,6 +1,8 @@
 import { Router, type RequestHandler } from 'express'
 import { z } from 'zod'
 
+import { ChecksQuerySchema } from '@habit-tracker/shared'
+
 import type { ChecksController } from './checks.controller.js'
 import { validate } from '../../middleware/validate.js'
 
@@ -12,6 +14,12 @@ export function createChecksRouter(
 ) {
   const router = Router()
 
+  router.get(
+    '/checks',
+    validate({ query: ChecksQuerySchema }),
+    currentUser,
+    controller.list,
+  )
   router.put(
     '/habits/:id/checks/:date',
     validate({ params: checkParams }),
