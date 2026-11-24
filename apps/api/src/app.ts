@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { json } from 'express'
 import type { Pool } from 'pg'
 import { pinoHttp } from 'pino-http'
 
@@ -30,7 +30,7 @@ export type AppDeps = { pool: Pool }
 export function createApp({ pool }: AppDeps) {
   const app = express()
 
-  app.use(express.json())
+  app.use(json())
 
   app.use(
     pinoHttp({

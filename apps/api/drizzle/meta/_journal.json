@@ -15,6 +15,13 @@
       "when": 1795520063138,
       "tag": "0001_concerned_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795541264334,
+      "tag": "0002_third_mastermind",
+      "breakpoints": true
     }
   ]
 }

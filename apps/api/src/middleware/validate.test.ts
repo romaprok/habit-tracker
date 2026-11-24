@@ -1,4 +1,4 @@
-import express, { type RequestHandler } from 'express'
+import express, { json, type RequestHandler } from 'express'
 import request from 'supertest'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
@@ -18,7 +18,7 @@ const echo: RequestHandler = (req, res) => {
 
 function buildApp() {
   const app = express()
-  app.use(express.json())
+  app.use(json())
   app.post('/habits', validate({ body: CreateHabitSchema }), echo)
   app.patch(
     '/habits/:id',

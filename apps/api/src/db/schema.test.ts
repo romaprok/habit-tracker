@@ -22,10 +22,11 @@ describe('habit_checks and users.timezone', () => {
     return { user, habit }
   }
 
-  it('gives new users the UTC timezone by default', async () => {
+  it('gives new users the UTC timezone and no password by default', async () => {
     const { user } = await createHabit()
 
     expect(user.timezone).toBe('UTC')
+    expect(user.passwordHash).toBeNull()
   })
 
   it('stores the check date as a plain YYYY-MM-DD string', async () => {
