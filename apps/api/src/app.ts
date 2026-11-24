@@ -19,7 +19,11 @@ import { createHealthController } from './modules/health/health.controller.js'
 import { createHealthRepository } from './modules/health/health.repository.js'
 import { createHealthRouter } from './modules/health/health.router.js'
 import { createHealthService } from './modules/health/health.service.js'
+import { createTodayRepository } from './modules/today/today.repository.js'
+import { createTodayRouter } from './modules/today/today.router.js'
+import { createTodayService } from './modules/today/today.service.js'
 import { createUsersRepository } from './modules/users/users.repository.js'
+import { createUsersService } from './modules/users/users.service.js'
 
 export type AppDeps = { pool: Pool }
 
@@ -47,6 +51,7 @@ export function createApp({ pool }: AppDeps) {
   const db = createDb(pool)
   const usersRepository = createUsersRepository(db)
   const habitsRepository = createHabitsRepository(db)
+  const usersService = createUsersService(usersRepository)
   const demoUser = createDemoUserMiddleware(usersRepository)
 
   const habitsController = createHabitsController(
@@ -58,10 +63,16 @@ export function createApp({ pool }: AppDeps) {
     createChecksService({
       checks: createChecksRepository(db),
       habits: habitsRepository,
-      users: usersRepository,
+      users: usersService,
     }),
   )
   app.use('/api', createChecksRouter(checksController, demoUser))
+
+  const todayService = createTodayService({
+    today: createTodayRepository(db),
+    users: usersService,
+  })
+  app.use('/api', createTodayRouter(todayService, demoUser))
 
   app.use(notFound)
   app.use(errorHandler)

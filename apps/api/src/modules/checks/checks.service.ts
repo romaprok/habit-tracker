@@ -1,13 +1,12 @@
 import type { ChecksRepository } from './checks.repository.js'
 import { NotFoundError, ValidationError } from '../../errors/app-error.js'
-import { todayIn } from '../../lib/dates.js'
 import type { HabitsRepository } from '../habits/habits.repository.js'
-import type { UsersRepository } from '../users/users.repository.js'
+import type { UsersService } from '../users/users.service.js'
 
 type Deps = {
   checks: ChecksRepository
   habits: HabitsRepository
-  users: UsersRepository
+  users: UsersService
 }
 
 export function createChecksService({ checks, habits, users }: Deps) {
@@ -16,16 +15,10 @@ export function createChecksService({ checks, habits, users }: Deps) {
     if (!habit) throw new NotFoundError('Habit not found')
   }
 
-  async function userToday(userId: string) {
-    const user = await users.findById(userId)
-    if (!user) throw new Error(`User ${userId} not found`)
-    return todayIn(user.timezone)
-  }
-
   return {
     async check(userId: string, habitId: string, date: string): Promise<void> {
       await assertOwnedHabit(userId, habitId)
-      if (date > (await userToday(userId))) {
+      if (date > (await users.todayFor(userId))) {
         throw new ValidationError({
           'params.date': ['Date cannot be in the future'],
         })
