@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router'
 
+import { HealthStatus } from '../features/health/HealthStatus.tsx'
+
 const NAV_LINK = 'inline-flex min-h-11 items-center rounded-lg px-3'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -17,7 +19,7 @@ export function Layout() {
           </NavLink>
           <nav aria-label="Main" className="flex gap-1">
             <NavLink to="/" end className={linkClass}>
-              Home
+              Today
             </NavLink>
             <NavLink to="/habits" className={linkClass}>
               Habits
@@ -28,6 +30,9 @@ export function Layout() {
       <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
         <Outlet />
       </main>
+      <footer className="mx-auto max-w-3xl px-4 pb-6 text-xs text-slate-500 sm:px-6">
+        <HealthStatus />
+      </footer>
     </div>
   )
 }

@@ -97,6 +97,10 @@ export const api = {
     return parse(parser, await send(path, withJson('PATCH', data, options)))
   },
 
+  async put(path: string, options: RequestOptions = {}): Promise<void> {
+    await send(path, { method: 'PUT', signal: options.signal })
+  },
+
   async delete(path: string, options: RequestOptions = {}): Promise<void> {
     await send(path, { method: 'DELETE', signal: options.signal })
   },
