@@ -1,10 +1,16 @@
+import { useMutationState } from '@tanstack/react-query'
+
 import type { TodayItem } from '@habit-tracker/shared'
 
 import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
 import { TodayItemRow } from '../features/today/TodayItemRow.tsx'
 import { useToday } from '../features/today/useToday.ts'
-import { useToggleCheck } from '../features/today/useToggleCheck.ts'
+import {
+  toggleCheckKey,
+  useToggleCheck,
+  type ToggleInput,
+} from '../features/today/useToggleCheck.ts'
 
 function formatDay(date: string) {
   const [year, month, day] = date.split('-').map(Number)
@@ -28,7 +34,10 @@ export function TodayPage() {
     })
   }
 
-  const pendingId = toggle.isPending ? toggle.variables.habitId : null
+  const pendingIds = useMutationState({
+    filters: { mutationKey: toggleCheckKey, status: 'pending' },
+    select: (mutation) => (mutation.state.variables as ToggleInput).habitId,
+  })
 
   if (state.status === 'loading') {
     return (
@@ -72,7 +81,7 @@ export function TodayPage() {
             <TodayItemRow
               key={item.habit.id}
               item={item}
-              pending={pendingId === item.habit.id}
+              pending={pendingIds.includes(item.habit.id)}
               onToggle={toggleItem}
             />
           ))}
@@ -81,7 +90,7 @@ export function TodayPage() {
 
       {toggle.isError && (
         <p role="alert" className="mt-3 text-sm text-red-600">
-          Could not save the change. Please try again.
+          Could not save the change, so it was undone. Please try again.
         </p>
       )}
     </section>
