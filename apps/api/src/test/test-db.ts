@@ -20,7 +20,9 @@ export function createTestDb() {
   const db = createDb(pool)
 
   async function reset() {
-    await db.execute(sql`TRUNCATE users, habits RESTART IDENTITY CASCADE`)
+    await db.execute(
+      sql`TRUNCATE users, habits, habit_checks RESTART IDENTITY CASCADE`,
+    )
   }
 
   return { pool, db, reset }
