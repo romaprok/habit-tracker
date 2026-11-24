@@ -4,6 +4,7 @@ import type { TodayResponse } from '@habit-tracker/shared'
 
 import { todayKeys } from './today-keys.ts'
 import { api } from '../../lib/api-client.ts'
+import { checkKeys } from '../checks/check-keys.ts'
 
 export type ToggleInput = { habitId: string; date: string; checked: boolean }
 
@@ -43,6 +44,10 @@ export function useToggleCheck() {
       }
     },
 
-    onSettled: () => queryClient.invalidateQueries({ queryKey: todayKeys.all }),
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: todayKeys.all }),
+        queryClient.invalidateQueries({ queryKey: checkKeys.all }),
+      ]),
   })
 }

@@ -11,15 +11,7 @@ import {
   useToggleCheck,
   type ToggleInput,
 } from '../features/today/useToggleCheck.ts'
-
-function formatDay(date: string) {
-  const [year, month, day] = date.split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
-}
+import { formatDay } from '../lib/dates.ts'
 
 export function TodayPage() {
   const { state, retry } = useToday()

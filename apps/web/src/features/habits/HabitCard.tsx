@@ -1,15 +1,24 @@
 import type { Habit } from '@habit-tracker/shared'
 
+import { WeekGrid } from './WeekGrid.tsx'
 import { Button } from '../../components/Button.tsx'
 import { TextLink } from '../../components/TextLink.tsx'
 
 type HabitCardProps = {
   habit: Habit
+  days: string[]
+  checkedDates: ReadonlySet<string>
   deleting: boolean
   onDelete: (habit: Habit) => void
 }
 
-export function HabitCard({ habit, deleting, onDelete }: HabitCardProps) {
+export function HabitCard({
+  habit,
+  days,
+  checkedDates,
+  deleting,
+  onDelete,
+}: HabitCardProps) {
   return (
     <li className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow sm:flex-row sm:items-start">
       <div className="flex flex-1 items-start gap-3">
@@ -24,6 +33,13 @@ export function HabitCard({ habit, deleting, onDelete }: HabitCardProps) {
             <p className="text-sm break-words text-slate-500">
               {habit.description}
             </p>
+          )}
+          {days.length > 0 && (
+            <WeekGrid
+              days={days}
+              checkedDates={checkedDates}
+              color={habit.color}
+            />
           )}
         </div>
       </div>

@@ -2,14 +2,21 @@ import type { Habit } from '@habit-tracker/shared'
 
 import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
+import { useChecks, type ChecksByHabit } from '../features/checks/useChecks.ts'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
 import { useDeleteHabit } from '../features/habits/mutations.ts'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
+import { useToday } from '../features/today/useToday.ts'
 import { ApiError } from '../lib/api-client.ts'
+import { lastDays } from '../lib/dates.ts'
+
+const EMPTY_DATES: ReadonlySet<string> = new Set()
 
 type HabitsContentProps = {
   state: HabitsState
   deletingId: string | null
+  days: string[]
+  checks: ChecksByHabit | undefined
   onRetry: () => void
   onDelete: (habit: Habit) => void
 }
@@ -17,6 +24,8 @@ type HabitsContentProps = {
 function HabitsContent({
   state,
   deletingId,
+  days,
+  checks,
   onRetry,
   onDelete,
 }: HabitsContentProps) {
@@ -51,6 +60,8 @@ function HabitsContent({
             <HabitCard
               key={habit.id}
               habit={habit}
+              days={days}
+              checkedDates={checks?.get(habit.id) ?? EMPTY_DATES}
               deleting={deletingId === habit.id}
               onDelete={onDelete}
             />
@@ -64,6 +75,9 @@ function HabitsContent({
 
 export function HabitsPage() {
   const { state, retry } = useHabits()
+  const { state: today } = useToday()
+  const days = today.status === 'success' ? lastDays(today.date, 7) : []
+  const { data: checks } = useChecks(days[0], days.at(-1))
   const deleteMutation = useDeleteHabit()
   const deletingId = deleteMutation.isPending ? deleteMutation.variables : null
 
@@ -91,6 +105,8 @@ export function HabitsPage() {
       <HabitsContent
         state={state}
         deletingId={deletingId}
+        days={days}
+        checks={checks}
         onRetry={retry}
         onDelete={deleteHabit}
       />
