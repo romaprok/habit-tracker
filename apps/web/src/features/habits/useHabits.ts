@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { HabitListResponseSchema, type Habit } from '@habit-tracker/shared'
 
+import { habitKeys } from './habit-keys.ts'
 import { api, ApiError } from '../../lib/api-client.ts'
 
 export type HabitsState =
@@ -17,26 +18,25 @@ function toErrorMessage(err: unknown) {
 }
 
 export function useHabits() {
-  const [state, setState] = useState<HabitsState>({ status: 'loading' })
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    api
-      .get('/habits', HabitListResponseSchema, { signal: controller.signal })
-      .then(({ habits }) => setState({ status: 'success', habits }))
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return
-        setState({ status: 'error', message: toErrorMessage(err) })
+  const query = useQuery({
+    queryKey: habitKeys.all,
+    queryFn: async ({ signal }) => {
+      const { habits } = await api.get('/habits', HabitListResponseSchema, {
+        signal,
       })
+      return habits
+    },
+  })
 
-    return () => controller.abort()
-  }, [attempt])
+  const state: HabitsState =
+    query.status === 'pending' || (query.status === 'error' && query.isFetching)
+      ? { status: 'loading' }
+      : query.status === 'error'
+        ? { status: 'error', message: toErrorMessage(query.error) }
+        : { status: 'success', habits: query.data }
 
   const retry = () => {
-    setState({ status: 'loading' })
-    setAttempt((n) => n + 1)
+    void query.refetch()
   }
 
   return { state, retry }

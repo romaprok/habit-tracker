@@ -10,9 +10,13 @@
   },
   "dependencies": {
     "@habit-tracker/shared": "^0.0.0",
+    "@hookform/resolvers": "^7.0.8",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.108.4",
+    "@tanstack/react-query-devtools": "^5.108.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.92.0",
     "react-router": "^8.5.1",
     "tailwindcss": "^4.1.18"
   }
