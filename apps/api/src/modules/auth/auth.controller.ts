@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 import type { Login, Register, UserResponse } from '@habit-tracker/shared'
 
 import type { AuthService } from './auth.service.js'
-import { setAccessCookie } from './cookies.js'
+import { clearAuthCookies, setAccessCookie } from './cookies.js'
 import type { TokenService } from './tokens.js'
 
 type Deps = {
@@ -22,6 +22,16 @@ export function createAuthController({ service, tokens, secureCookies }: Deps) {
       const user = await service.register(req.body as Register)
       await signIn(res, user.id)
       res.status(201).json({ user })
+    },
+
+    async me(req: Request, res: Response<UserResponse>) {
+      if (!req.userId) throw new Error('requireAuth must run before me')
+      res.json({ user: await service.getUser(req.userId) })
+    },
+
+    logout(_req: Request, res: Response) {
+      clearAuthCookies(res, secureCookies)
+      res.status(204).end()
     },
 
     async login(req: Request, res: Response<UserResponse>) {

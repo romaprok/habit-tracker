@@ -161,7 +161,7 @@
 - [x] `SH-04` · 1 — Схеми `Register`, `Login` і `User` · _після: SH-01_
 - [x] `BE-18` · 3 — `POST /api/auth/register`: валідація, хеш argon2, зайнятий email → 409 · _після: BE-17, SH-04_
 - [x] `BE-19` · 3 — `POST /api/auth/login`: JWT в httpOnly cookie (поки один токен на 7 днів); однакова відповідь на «немає email» і «невірний пароль»; `redact` у `logger.ts`, щоб заголовки `cookie`, `authorization` і `set-cookie` не потрапляли в логи · _після: BE-18_
-- [ ] `BE-20` · 2 — Middleware `requireAuth`, `GET /api/auth/me`, `POST /api/auth/logout` · _після: BE-19_
+- [x] `BE-20` · 2 — Middleware `requireAuth`, `GET /api/auth/me`, `POST /api/auth/logout` · _після: BE-19_
 - [ ] `BE-21` · 3 — Прибрати demo-користувача з коду: усі маршрути звичок і відміток беруть `req.user.id` · _після: BE-20_
 - [ ] `BE-22` · 2 — Тест: користувач A не може прочитати, змінити чи видалити звичку користувача B (404) · _після: BE-21_
 - [ ] `FE-17` · 3 — Сторінки входу й реєстрації на React Hook Form і схемах з `shared` · _після: FE-12, BE-19_

@@ -8,6 +8,7 @@ import { logger } from './logger.js'
 import { createDemoUserMiddleware } from './middleware/demo-user.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
+import { createRequireAuth } from './middleware/require-auth.js'
 import { createAuthController } from './modules/auth/auth.controller.js'
 import { createAuthRouter } from './modules/auth/auth.router.js'
 import { createAuthService } from './modules/auth/auth.service.js'
@@ -70,7 +71,8 @@ export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
     tokens,
     secureCookies,
   })
-  app.use('/api', createAuthRouter(authController))
+  const requireAuth = createRequireAuth(tokens)
+  app.use('/api', createAuthRouter(authController, requireAuth))
 
   const habitsController = createHabitsController(
     createHabitsService(habitsRepository),

@@ -31,6 +31,12 @@ export function createAuthService({ users }: Deps) {
       }
     },
 
+    async getUser(id: string): Promise<User> {
+      const user = await users.findById(id)
+      if (!user) throw new UnauthorizedError()
+      return toUser(user)
+    },
+
     async login({ email, password }: Login): Promise<User> {
       const user = await users.findByEmail(email)
       const hash = user?.passwordHash ?? (await getDummyHash())
