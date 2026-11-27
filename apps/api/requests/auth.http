@@ -13,6 +13,10 @@ Content-Type: application/json
 ### Current user (401 without a session)
 GET {{baseUrl}}/auth/me
 
+### Refresh: swaps the refresh cookie for a new pair (204).
+# Run it twice with an old cookie copied by hand to see reuse detection.
+POST {{baseUrl}}/auth/refresh
+
 ### Log out: clears the session cookie
 POST {{baseUrl}}/auth/logout
 

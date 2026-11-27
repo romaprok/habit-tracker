@@ -3,8 +3,13 @@ import type { Request, Response } from 'express'
 import type { Login, Register, UserResponse } from '@habit-tracker/shared'
 
 import type { AuthService } from './auth.service.js'
-import { clearAuthCookies, setSessionCookies } from './cookies.js'
+import {
+  clearAuthCookies,
+  REFRESH_COOKIE,
+  setSessionCookies,
+} from './cookies.js'
 import type { SessionService } from './session.service.js'
+import { UnauthorizedError } from '../../errors/app-error.js'
 
 type Deps = {
   service: AuthService
@@ -19,11 +24,10 @@ export function createAuthController({
   accessTtlSeconds,
   secureCookies,
 }: Deps) {
+  const cookieSettings = { secure: secureCookies, accessTtlSeconds }
+
   async function signIn(res: Response, userId: string) {
-    setSessionCookies(res, await sessions.start(userId), {
-      secure: secureCookies,
-      accessTtlSeconds,
-    })
+    setSessionCookies(res, await sessions.start(userId), cookieSettings)
   }
 
   return {
@@ -36,6 +40,21 @@ export function createAuthController({
     async me(req: Request, res: Response<UserResponse>) {
       if (!req.userId) throw new Error('requireAuth must run before me')
       res.json({ user: await service.getUser(req.userId) })
+    },
+
+    async refresh(req: Request, res: Response) {
+      const token: unknown = req.cookies?.[REFRESH_COOKIE]
+      try {
+        if (typeof token !== 'string') throw new UnauthorizedError()
+        setSessionCookies(res, await sessions.refresh(token), cookieSettings)
+        res.status(204).end()
+      } catch (err) {
+        // A dead refresh token is useless to the browser: drop both cookies.
+        if (err instanceof UnauthorizedError) {
+          clearAuthCookies(res, secureCookies)
+        }
+        throw err
+      }
     },
 
     logout(_req: Request, res: Response) {

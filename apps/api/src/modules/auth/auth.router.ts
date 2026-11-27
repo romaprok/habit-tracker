@@ -18,6 +18,7 @@ export function createAuthRouter(
   )
   router.post('/auth/login', validate({ body: LoginSchema }), controller.login)
   router.get('/auth/me', requireAuth, controller.me)
+  router.post('/auth/refresh', controller.refresh)
   router.post('/auth/logout', controller.logout)
 
   return router

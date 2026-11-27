@@ -19,3 +19,8 @@ export function createDb(pool: Pool) {
 }
 
 export type Db = ReturnType<typeof createDb>
+
+// A transaction has the same query API as the db, so repositories can be
+// built over either one (Unit of Work: several repository calls, one commit).
+export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
+export type DbOrTx = Db | Tx
