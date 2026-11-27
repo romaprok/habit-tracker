@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto'
+import { randomBytes, timingSafeEqual } from 'node:crypto'
 
 import type { CookieOptions, Response } from 'express'
 
@@ -28,4 +28,13 @@ export function setStateCookie(res: Response, state: string, secure: boolean) {
 
 export function clearStateCookie(res: Response, secure: boolean) {
   res.clearCookie(OAUTH_STATE_COOKIE, stateCookieOptions(secure))
+}
+
+export function statesMatch(received: unknown, expected: unknown): boolean {
+  if (typeof received !== 'string' || typeof expected !== 'string') {
+    return false
+  }
+  const a = Buffer.from(received)
+  const b = Buffer.from(expected)
+  return a.length === b.length && timingSafeEqual(a, b)
 }

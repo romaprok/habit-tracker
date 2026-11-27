@@ -6,6 +6,7 @@ export function createGitHubRouter(controller: GitHubController) {
   const router = Router()
 
   router.get('/auth/github', controller.start)
+  router.get('/auth/github/callback', controller.callback)
 
   return router
 }
