@@ -25,6 +25,16 @@ export const HeatmapDaySchema = z.object({
 
 export type HeatmapDay = z.infer<typeof HeatmapDaySchema>
 
+export const CompletionSchema = z.object({
+  checked: z.number().int().nonnegative(),
+  // Days in the window, but not before the habit existed: a habit created
+  // yesterday is not "14% done" for the week.
+  total: z.number().int().nonnegative(),
+  rate: z.number().min(0).max(1),
+})
+
+export type Completion = z.infer<typeof CompletionSchema>
+
 export const HabitStatsSchema = z.object({
   habitId: z.uuid(),
   from: z.iso.date(),
@@ -32,6 +42,8 @@ export const HabitStatsSchema = z.object({
   // Every day from `from` to `to`, oldest first, gaps included.
   days: z.array(HeatmapDaySchema),
   streak: StreakSchema.omit({ habitId: true }),
+  // Last 7 and last 30 days, today included.
+  completion: z.object({ week: CompletionSchema, month: CompletionSchema }),
 })
 
 export type HabitStats = z.infer<typeof HabitStatsSchema>

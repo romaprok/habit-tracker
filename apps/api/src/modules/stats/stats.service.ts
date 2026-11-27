@@ -1,5 +1,6 @@
 import {
   HEATMAP_DAYS,
+  type Completion,
   type HabitStats,
   type StreakListResponse,
 } from '@habit-tracker/shared'
@@ -9,6 +10,10 @@ import { NotFoundError } from '../../errors/app-error.js'
 import { addDays } from '../../lib/dates.js'
 import type { HabitsRepository } from '../habits/habits.repository.js'
 import type { UsersService } from '../users/users.service.js'
+
+function completion(checked: number, total: number): Completion {
+  return { checked, total, rate: total > 0 ? checked / total : 0 }
+}
 
 type Deps = {
   stats: StatsRepository
@@ -31,9 +36,10 @@ export function createStatsService({ stats, habits, users }: Deps) {
 
       const to = await users.todayFor(userId)
       const from = addDays(to, -(HEATMAP_DAYS - 1))
-      const [days, [streak]] = await Promise.all([
+      const [days, [streak], done] = await Promise.all([
         stats.heatmap(habitId, from, to),
         stats.streaks(userId, to, habitId),
+        stats.completion(habitId, to),
       ])
       return {
         habitId,
@@ -41,6 +47,10 @@ export function createStatsService({ stats, habits, users }: Deps) {
         to,
         days,
         streak: { current: streak.current, longest: streak.longest },
+        completion: {
+          week: completion(done.weekChecked, done.weekTotal),
+          month: completion(done.monthChecked, done.monthTotal),
+        },
       }
     },
   }

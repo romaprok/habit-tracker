@@ -4,6 +4,13 @@ import type { HeatmapDay, Streak } from '@habit-tracker/shared'
 
 import type { Db } from '../../db/client.js'
 
+type CompletionRow = {
+  weekChecked: number
+  weekTotal: number
+  monthChecked: number
+  monthTotal: number
+}
+
 export function createStatsRepository(db: Db) {
   return {
     // Gaps and islands, in one query.
@@ -74,6 +81,42 @@ export function createStatsRepository(db: Db) {
         order by d
       `)
       return rows
+    },
+
+    // A window starts 6 (or 29) days before today, but not before the habit
+    // began: its creation day in the user's time zone, or an earlier
+    // back-filled check (least() skips NULL when there are no checks).
+    async completion(habitId: string, today: string): Promise<CompletionRow> {
+      const { rows } = await db.execute<CompletionRow>(sql`
+        with habit as (
+          select h.id,
+                 least(
+                   (h.created_at at time zone u.timezone)::date,
+                   (select min(date) from habit_checks where habit_id = h.id),
+                   ${today}::date
+                 ) as start
+          from habits h
+          join users u on u.id = h.user_id
+          where h.id = ${habitId}
+        ),
+        windows as (
+          select id,
+                 greatest(${today}::date - 6, start) as week_start,
+                 greatest(${today}::date - 29, start) as month_start
+          from habit
+        )
+        select
+          count(c.id) filter (where c.date >= w.week_start)::int as "weekChecked",
+          (${today}::date - w.week_start + 1)::int as "weekTotal",
+          count(c.id)::int as "monthChecked",
+          (${today}::date - w.month_start + 1)::int as "monthTotal"
+        from windows w
+        left join habit_checks c
+          on c.habit_id = w.id
+         and c.date between w.month_start and ${today}::date
+        group by w.id, w.week_start, w.month_start
+      `)
+      return rows[0]
     },
   }
 }
