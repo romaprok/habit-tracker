@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# The workflow only reads the code: no write access for the token.
+permissions:
+  contents: read
+
+# A new push to the same PR cancels the run that is still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # PostgreSQL as a service container: the API tests run against a real
+    # database, the same as locally. Vitest's global setup creates
+    # habit_tracker_test and applies the migrations.
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: habit
+          POSTGRES_PASSWORD: habit
+          POSTGRES_DB: habit_tracker
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U habit -d habit_tracker"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://habit:habit@localhost:5432/habit_tracker
+      TEST_DATABASE_URL: postgresql://habit:habit@localhost:5432/habit_tracker_test
+      # Not a secret: it only signs tokens inside this test run.
+      JWT_SECRET: ci-only-jwt-secret-0123456789abcdef-0123
+      # Git hooks are for developers' machines, not for CI.
+      HUSKY: '0'
+
+    steps:
+      # Actions are pinned to a commit SHA, not a tag: a tag can be moved
+      # to other code, a SHA cannot. The comment keeps the version readable.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build -w apps/web
