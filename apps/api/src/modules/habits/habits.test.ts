@@ -5,12 +5,14 @@ import { HabitListResponseSchema } from '@habit-tracker/shared'
 
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habits, users } from '../../db/schema.js'
+import { authCookie } from '../../test/auth.js'
 import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
 describe('GET /api/habits', () => {
   const { pool, db, reset } = createTestDb()
   const app = createTestApp(pool)
+  let cookie = ''
 
   beforeEach(reset)
   afterAll(() => pool.end())
@@ -20,6 +22,7 @@ describe('GET /api/habits', () => {
       .insert(users)
       .values({ email: DEMO_USER_EMAIL })
       .returning()
+    cookie = await authCookie(demo.id)
     const [other] = await db
       .insert(users)
       .values({ email: 'other@test.local' })
@@ -30,7 +33,7 @@ describe('GET /api/habits', () => {
       { userId: other.id, name: 'Not mine', color: '#000000' },
     ])
 
-    const res = await request(app).get('/api/habits')
+    const res = await request(app).get('/api/habits').set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     const body = HabitListResponseSchema.parse(res.body)
@@ -39,9 +42,13 @@ describe('GET /api/habits', () => {
   })
 
   it('returns an empty list when the demo user has no habits', async () => {
-    await db.insert(users).values({ email: DEMO_USER_EMAIL })
+    const [demo] = await db
+      .insert(users)
+      .values({ email: DEMO_USER_EMAIL })
+      .returning()
+    cookie = await authCookie(demo.id)
 
-    const res = await request(app).get('/api/habits')
+    const res = await request(app).get('/api/habits').set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ habits: [] })

@@ -5,6 +5,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habitChecks, habits, users } from '../../db/schema.js'
 import { todayIn } from '../../lib/dates.js'
+import { authCookie } from '../../test/auth.js'
 import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
@@ -20,6 +21,7 @@ function addDays(date: string, days: number) {
 describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
   const { pool, db, reset } = createTestDb()
   const app = createTestApp(pool)
+  let cookie = ''
 
   beforeEach(reset)
   afterAll(() => pool.end())
@@ -29,6 +31,7 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
       .insert(users)
       .values({ email: DEMO_USER_EMAIL, timezone })
       .returning()
+    cookie = await authCookie(demo.id)
     const [other] = await db
       .insert(users)
       .values({ email: 'other@test.local' })
@@ -55,18 +58,22 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
     const { mine, today } = await seed()
     const url = `/api/habits/${mine.id}/checks/${today}`
 
-    expect((await request(app).put(url)).status).toBe(204)
-    expect((await request(app).put(url)).status).toBe(204)
+    expect((await request(app).put(url).set('Cookie', cookie)).status).toBe(204)
+    expect((await request(app).put(url).set('Cookie', cookie)).status).toBe(204)
     expect(await countChecks(mine.id, today)).toBe(1)
   })
 
   it('unchecks a habit and stays idempotent on repeat', async () => {
     const { mine, today } = await seed()
     const url = `/api/habits/${mine.id}/checks/${today}`
-    await request(app).put(url)
+    await request(app).put(url).set('Cookie', cookie)
 
-    expect((await request(app).delete(url)).status).toBe(204)
-    expect((await request(app).delete(url)).status).toBe(204)
+    expect((await request(app).delete(url).set('Cookie', cookie)).status).toBe(
+      204,
+    )
+    expect((await request(app).delete(url).set('Cookie', cookie)).status).toBe(
+      204,
+    )
     expect(await countChecks(mine.id, today)).toBe(0)
   })
 
@@ -74,9 +81,9 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
     const { mine, today } = await seed()
     const lastWeek = addDays(today, -7)
 
-    const res = await request(app).put(
-      `/api/habits/${mine.id}/checks/${lastWeek}`,
-    )
+    const res = await request(app)
+      .put(`/api/habits/${mine.id}/checks/${lastWeek}`)
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(204)
     expect(await countChecks(mine.id, lastWeek)).toBe(1)
@@ -86,9 +93,9 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
     const { mine, today } = await seed()
     const tomorrow = addDays(today, 1)
 
-    const res = await request(app).put(
-      `/api/habits/${mine.id}/checks/${tomorrow}`,
-    )
+    const res = await request(app)
+      .put(`/api/habits/${mine.id}/checks/${tomorrow}`)
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(400)
     expect(res.body.error.fields).toEqual({
@@ -101,16 +108,16 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
     const aheadToday = todayIn(KIRITIMATI)
 
     const { mine } = await seed(KIRITIMATI)
-    const allowed = await request(app).put(
-      `/api/habits/${mine.id}/checks/${aheadToday}`,
-    )
+    const allowed = await request(app)
+      .put(`/api/habits/${mine.id}/checks/${aheadToday}`)
+      .set('Cookie', cookie)
     expect(allowed.status).toBe(204)
 
     await reset()
     const behind = await seed(PAGO_PAGO)
-    const rejected = await request(app).put(
-      `/api/habits/${behind.mine.id}/checks/${aheadToday}`,
-    )
+    const rejected = await request(app)
+      .put(`/api/habits/${behind.mine.id}/checks/${aheadToday}`)
+      .set('Cookie', cookie)
     expect(rejected.status).toBe(400)
   })
 
@@ -118,17 +125,19 @@ describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
     const { theirs, today } = await seed()
     const url = `/api/habits/${theirs.id}/checks/${today}`
 
-    expect((await request(app).put(url)).status).toBe(404)
-    expect((await request(app).delete(url)).status).toBe(404)
+    expect((await request(app).put(url).set('Cookie', cookie)).status).toBe(404)
+    expect((await request(app).delete(url).set('Cookie', cookie)).status).toBe(
+      404,
+    )
     expect(await countChecks(theirs.id, today)).toBe(0)
   })
 
   it('returns 400 for an impossible date', async () => {
     const { mine } = await seed()
 
-    const res = await request(app).put(
-      `/api/habits/${mine.id}/checks/2026-02-30`,
-    )
+    const res = await request(app)
+      .put(`/api/habits/${mine.id}/checks/2026-02-30`)
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(400)
     expect(Object.keys(res.body.error.fields)).toEqual(['params.date'])

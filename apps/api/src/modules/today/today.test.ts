@@ -6,6 +6,7 @@ import { TodayResponseSchema } from '@habit-tracker/shared'
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habitChecks, habits, users } from '../../db/schema.js'
 import { todayIn } from '../../lib/dates.js'
+import { authCookie } from '../../test/auth.js'
 import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
@@ -18,6 +19,7 @@ function addDays(date: string, days: number) {
 describe('GET /api/today', () => {
   const { pool, db, reset } = createTestDb()
   const app = createTestApp(pool)
+  let cookie = ''
 
   beforeEach(reset)
   afterAll(() => pool.end())
@@ -29,6 +31,7 @@ describe('GET /api/today', () => {
       .insert(users)
       .values({ email: DEMO_USER_EMAIL, timezone })
       .returning()
+    cookie = await authCookie(demo.id)
     const [other] = await db
       .insert(users)
       .values({ email: 'other@test.local' })
@@ -52,7 +55,7 @@ describe('GET /api/today', () => {
       { habitId: run.id, date: addDays(today, -1) },
     ])
 
-    const res = await request(app).get('/api/today')
+    const res = await request(app).get('/api/today').set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     const body = TodayResponseSchema.parse(res.body)
@@ -64,9 +67,13 @@ describe('GET /api/today', () => {
   })
 
   it('returns an empty list when the user has no habits', async () => {
-    await db.insert(users).values({ email: DEMO_USER_EMAIL })
+    const [demo] = await db
+      .insert(users)
+      .values({ email: DEMO_USER_EMAIL })
+      .returning()
+    cookie = await authCookie(demo.id)
 
-    const res = await request(app).get('/api/today')
+    const res = await request(app).get('/api/today').set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ date: todayIn('UTC'), items: [] })

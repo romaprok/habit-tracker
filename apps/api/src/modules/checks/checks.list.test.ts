@@ -5,12 +5,14 @@ import { CheckListResponseSchema } from '@habit-tracker/shared'
 
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habitChecks, habits, users } from '../../db/schema.js'
+import { authCookie } from '../../test/auth.js'
 import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
 describe('GET /api/checks', () => {
   const { pool, db, reset } = createTestDb()
   const app = createTestApp(pool)
+  let cookie = ''
 
   beforeEach(reset)
   afterAll(() => pool.end())
@@ -20,6 +22,7 @@ describe('GET /api/checks', () => {
       .insert(users)
       .values({ email: DEMO_USER_EMAIL })
       .returning()
+    cookie = await authCookie(demo.id)
     const [other] = await db
       .insert(users)
       .values({ email: 'other@test.local' })
@@ -48,9 +51,9 @@ describe('GET /api/checks', () => {
   it("returns only the user's checks inside the range, inclusive, sorted by date", async () => {
     const { read, run } = await seed()
 
-    const res = await request(app).get(
-      '/api/checks?from=2026-11-17&to=2026-11-22',
-    )
+    const res = await request(app)
+      .get('/api/checks?from=2026-11-17&to=2026-11-22')
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     expect(CheckListResponseSchema.parse(res.body).checks).toEqual([
@@ -62,9 +65,9 @@ describe('GET /api/checks', () => {
   it('returns an empty list when nothing is checked in the range', async () => {
     await seed()
 
-    const res = await request(app).get(
-      '/api/checks?from=2026-01-01&to=2026-01-31',
-    )
+    const res = await request(app)
+      .get('/api/checks?from=2026-01-01&to=2026-01-31')
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ checks: [] })
@@ -73,7 +76,9 @@ describe('GET /api/checks', () => {
   it('requires both dates', async () => {
     await seed()
 
-    const res = await request(app).get('/api/checks?from=2026-11-17')
+    const res = await request(app)
+      .get('/api/checks?from=2026-11-17')
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(400)
     expect(Object.keys(res.body.error.fields)).toEqual(['query.to'])
@@ -82,9 +87,9 @@ describe('GET /api/checks', () => {
   it('rejects from after to', async () => {
     await seed()
 
-    const res = await request(app).get(
-      '/api/checks?from=2026-11-22&to=2026-11-17',
-    )
+    const res = await request(app)
+      .get('/api/checks?from=2026-11-22&to=2026-11-17')
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(400)
     expect(res.body.error.fields['query.to']).toEqual([
@@ -95,9 +100,9 @@ describe('GET /api/checks', () => {
   it('rejects a range longer than a year', async () => {
     await seed()
 
-    const res = await request(app).get(
-      '/api/checks?from=2025-01-01&to=2026-11-22',
-    )
+    const res = await request(app)
+      .get('/api/checks?from=2025-01-01&to=2026-11-22')
+      .set('Cookie', cookie)
 
     expect(res.status).toBe(400)
     expect(res.body.error.fields['query.to'][0]).toMatch(

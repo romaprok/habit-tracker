@@ -1,4 +1,5 @@
-# Habits API. Run requests from top to bottom: "Create" stores the new id
+# Habits API. Requires a session: run "Log in" in auth.http first.
+# Run requests from top to bottom: "Create" stores the new id
 # in the global variable habitId, the requests below it reuse it.
 # Environment: pick "dev" (API directly) or "via-vite-proxy" in the run selector.
 

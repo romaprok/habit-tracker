@@ -5,7 +5,6 @@ import { pinoHttp } from 'pino-http'
 
 import { createDb } from './db/client.js'
 import { logger } from './logger.js'
-import { createDemoUserMiddleware } from './middleware/demo-user.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
 import { createRequireAuth } from './middleware/require-auth.js'
@@ -63,7 +62,6 @@ export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
   const usersRepository = createUsersRepository(db)
   const habitsRepository = createHabitsRepository(db)
   const usersService = createUsersService(usersRepository)
-  const demoUser = createDemoUserMiddleware(usersRepository)
 
   const tokens = createTokenService(jwtSecret)
   const authController = createAuthController({
@@ -77,7 +75,7 @@ export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
   const habitsController = createHabitsController(
     createHabitsService(habitsRepository),
   )
-  app.use('/api', createHabitsRouter(habitsController, demoUser))
+  app.use('/api', createHabitsRouter(habitsController, requireAuth))
 
   const checksController = createChecksController(
     createChecksService({
@@ -86,13 +84,13 @@ export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
       users: usersService,
     }),
   )
-  app.use('/api', createChecksRouter(checksController, demoUser))
+  app.use('/api', createChecksRouter(checksController, requireAuth))
 
   const todayService = createTodayService({
     today: createTodayRepository(db),
     users: usersService,
   })
-  app.use('/api', createTodayRouter(todayService, demoUser))
+  app.use('/api', createTodayRouter(todayService, requireAuth))
 
   app.use(notFound)
   app.use(errorHandler)

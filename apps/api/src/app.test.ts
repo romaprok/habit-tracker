@@ -23,12 +23,10 @@ describe('app error handling', () => {
     })
   })
 
-  it('returns 500 INTERNAL_ERROR when the demo user is missing', async () => {
+  it('returns 401 UNAUTHORIZED for habits without a session', async () => {
     const res = await request(app).get('/api/habits')
 
-    expect(res.status).toBe(500)
-    expect(ErrorResponseSchema.parse(res.body).error.code).toBe(
-      'INTERNAL_ERROR',
-    )
+    expect(res.status).toBe(401)
+    expect(ErrorResponseSchema.parse(res.body).error.code).toBe('UNAUTHORIZED')
   })
 })

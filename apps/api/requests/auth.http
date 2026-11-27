@@ -1,0 +1,36 @@
+# Auth. The HTTP client keeps cookies between requests, so after "Log in"
+# every request in habits.http is sent with the session cookie.
+
+### Log in as the demo user from the seed
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@habit-tracker.local",
+  "password": "demo-password"
+}
+
+### Current user (401 without a session)
+GET {{baseUrl}}/auth/me
+
+### Log out: clears the session cookie
+POST {{baseUrl}}/auth/logout
+
+### Register a new account (409 if the email is taken)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "new-user@example.com",
+  "password": "a long enough password",
+  "timezone": "Europe/Kyiv"
+}
+
+### 401: wrong password, same answer as for an unknown email
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@habit-tracker.local",
+  "password": "wrong password"
+}
