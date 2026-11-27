@@ -9,6 +9,8 @@ const envSchema = z.object({
   JWT_SECRET: z
     .string()
     .min(32, 'JWT_SECRET must be at least 32 characters long'),
+  // Short on purpose; set e.g. 30 locally to watch the silent refresh work.
+  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),

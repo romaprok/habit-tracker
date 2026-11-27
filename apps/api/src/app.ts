@@ -11,6 +11,8 @@ import { createRequireAuth } from './middleware/require-auth.js'
 import { createAuthController } from './modules/auth/auth.controller.js'
 import { createAuthRouter } from './modules/auth/auth.router.js'
 import { createAuthService } from './modules/auth/auth.service.js'
+import { createRefreshTokensRepository } from './modules/auth/refresh-tokens.repository.js'
+import { createSessionService } from './modules/auth/session.service.js'
 import { createTokenService } from './modules/auth/tokens.js'
 import { createChecksController } from './modules/checks/checks.controller.js'
 import { createChecksRepository } from './modules/checks/checks.repository.js'
@@ -34,9 +36,15 @@ export type AppDeps = {
   pool: Pool
   jwtSecret: string
   secureCookies: boolean
+  accessTokenTtlSeconds?: number
 }
 
-export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
+export function createApp({
+  pool,
+  jwtSecret,
+  secureCookies,
+  accessTokenTtlSeconds,
+}: AppDeps) {
   const app = express()
 
   app.use(json())
@@ -63,10 +71,15 @@ export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
   const habitsRepository = createHabitsRepository(db)
   const usersService = createUsersService(usersRepository)
 
-  const tokens = createTokenService(jwtSecret)
+  const tokens = createTokenService(jwtSecret, accessTokenTtlSeconds)
+  const sessions = createSessionService({
+    tokens,
+    refreshTokens: createRefreshTokensRepository(db),
+  })
   const authController = createAuthController({
     service: createAuthService({ users: usersRepository }),
-    tokens,
+    sessions,
+    accessTtlSeconds: tokens.accessTtlSeconds,
     secureCookies,
   })
   const requireAuth = createRequireAuth(tokens)

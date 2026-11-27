@@ -8,6 +8,7 @@ const app = createApp({
   pool,
   jwtSecret: config.JWT_SECRET,
   secureCookies: config.NODE_ENV === 'production',
+  accessTokenTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,
 })
 
 app.listen(config.PORT, (error) => {

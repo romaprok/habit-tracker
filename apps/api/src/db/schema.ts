@@ -57,3 +57,23 @@ export const habitChecks = pgTable(
   },
   (t) => [unique('habit_checks_habit_id_date_unique').on(t.habitId, t.date)],
 )
+
+export const refreshTokens = pgTable(
+  'refresh_tokens',
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text().notNull(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    usedAt: timestamp({ withTimezone: true }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('refresh_tokens_token_hash_unique').on(t.tokenHash),
+    index().on(t.userId),
+  ],
+)

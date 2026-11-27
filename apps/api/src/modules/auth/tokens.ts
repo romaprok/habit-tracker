@@ -2,18 +2,23 @@ import { jwtVerify, SignJWT } from 'jose'
 
 const ALGORITHM = 'HS256'
 
-export const ACCESS_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60
+export const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 15 * 60
 
-export function createTokenService(secret: string) {
+export function createTokenService(
+  secret: string,
+  accessTtlSeconds = DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
+) {
   const key = new TextEncoder().encode(secret)
 
   return {
+    accessTtlSeconds,
+
     signAccessToken(userId: string): Promise<string> {
       return new SignJWT({})
         .setProtectedHeader({ alg: ALGORITHM })
         .setSubject(userId)
         .setIssuedAt()
-        .setExpirationTime(`${ACCESS_TOKEN_TTL_SECONDS}s`)
+        .setExpirationTime(`${accessTtlSeconds}s`)
         .sign(key)
     },
 
