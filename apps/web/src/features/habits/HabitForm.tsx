@@ -1,19 +1,17 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { CreateHabitSchema, type CreateHabit } from '@habit-tracker/shared'
 
 import { Button } from '../../components/Button.tsx'
-import { ApiError } from '../../lib/api-client.ts'
+import { FormField, INPUT_CLASS } from '../../components/FormField.tsx'
+import { applyServerErrors } from '../../lib/form-errors.ts'
 
 export type HabitFormValues = {
   name: string
   description: string
   color: string
 }
-
-type FieldName = keyof HabitFormValues
 
 type HabitFormProps = {
   initialValues?: HabitFormValues
@@ -27,57 +25,7 @@ const EMPTY_VALUES: HabitFormValues = {
   color: '#3B82F6',
 }
 
-const FIELD_NAMES: FieldName[] = ['name', 'description', 'color']
-
-function isFieldName(key: string): key is FieldName {
-  return (FIELD_NAMES as string[]).includes(key)
-}
-
-function toFormError(err: unknown) {
-  if (err instanceof ApiError && err.status === 0) {
-    return 'Cannot reach the server. Check your connection and try again.'
-  }
-  if (err instanceof ApiError) return err.message
-  return 'Could not save the habit. Please try again.'
-}
-
-type InputA11yProps = {
-  id: string
-  'aria-invalid': boolean
-  'aria-describedby': string | undefined
-}
-
-type FieldProps = {
-  name: FieldName
-  label: string
-  error?: string
-  children: (inputProps: InputA11yProps) => ReactNode
-}
-
-function Field({ name, label, error, children }: FieldProps) {
-  const id = `habit-${name}`
-  const errorId = `${id}-error`
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">
-        {label}
-      </label>
-      {children({
-        id,
-        'aria-invalid': Boolean(error),
-        'aria-describedby': error ? errorId : undefined,
-      })}
-      {error && (
-        <p id={errorId} className="mt-1 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-const INPUT_CLASS =
-  'w-full rounded-lg border border-slate-300 px-3 py-2 text-base aria-invalid:border-red-500'
+const FIELDS = ['name', 'description', 'color'] as const
 
 export function HabitForm({
   initialValues = EMPTY_VALUES,
@@ -99,17 +47,12 @@ export function HabitForm({
     try {
       await onSubmit({ ...data, description: description || null })
     } catch (err) {
-      const serverFields = err instanceof ApiError ? err.fields : {}
-      let shownUnderFields = 0
-      for (const [key, messages] of Object.entries(serverFields)) {
-        if (isFieldName(key) && messages[0]) {
-          setError(key, { type: 'server', message: messages[0] })
-          shownUnderFields += 1
-        }
-      }
-      if (shownUnderFields === 0) {
-        setError('root.server', { message: toFormError(err) })
-      }
+      applyServerErrors(
+        err,
+        setError,
+        FIELDS,
+        'Could not save the habit. Please try again.',
+      )
     }
   })
 
@@ -119,14 +62,14 @@ export function HabitForm({
       onSubmit={submit}
       className="space-y-4 rounded-xl bg-white p-4 shadow sm:p-6"
     >
-      <Field name="name" label="Name" error={errors.name?.message}>
+      <FormField id="habit-name" label="Name" error={errors.name?.message}>
         {(a11y) => (
           <input {...a11y} {...register('name')} className={INPUT_CLASS} />
         )}
-      </Field>
+      </FormField>
 
-      <Field
-        name="description"
+      <FormField
+        id="habit-description"
         label="Description (optional)"
         error={errors.description?.message}
       >
@@ -138,9 +81,9 @@ export function HabitForm({
             className={INPUT_CLASS}
           />
         )}
-      </Field>
+      </FormField>
 
-      <Field name="color" label="Color" error={errors.color?.message}>
+      <FormField id="habit-color" label="Color" error={errors.color?.message}>
         {(a11y) => (
           <input
             {...a11y}
@@ -149,7 +92,7 @@ export function HabitForm({
             className="h-11 w-20 cursor-pointer rounded border border-slate-300"
           />
         )}
-      </Field>
+      </FormField>
 
       {errors.root?.server && (
         <p role="alert" className="text-sm text-red-600">
