@@ -77,3 +77,31 @@ export const refreshTokens = pgTable(
     index().on(t.userId),
   ],
 )
+
+export const oauthAccounts = pgTable(
+  'oauth_accounts',
+  {
+    id: uuid()
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: text().notNull(),
+    // Stable id from the provider (GitHub's numeric user id), not the login
+    // or email: those can change, the id cannot.
+    providerUserId: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // One provider account belongs to exactly one of our users…
+    unique('oauth_accounts_provider_user_unique').on(
+      t.provider,
+      t.providerUserId,
+    ),
+    // …and a user links at most one account per provider. This index starts
+    // with user_id, so it also serves "accounts of this user" lookups.
+    unique('oauth_accounts_user_provider_unique').on(t.userId, t.provider),
+    check('oauth_accounts_provider_known', sql`${t.provider} in ('github')`),
+  ],
+)

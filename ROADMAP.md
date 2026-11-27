@@ -54,7 +54,7 @@ habit-tracker/
 - **habits**: `id`, `user_id` → users, `name`, `description`, `color`, `archived_at`, `created_at`
 - **habit_checks**: `id`, `habit_id` → habits, `date`, `created_at`, unique `(habit_id, date)`
 - **refresh_tokens**: `id`, `user_id` → users, `token_hash` (unique, SHA-256 від токена), `expires_at`, `used_at` (позначка ротації — для виявлення повторного використання), `created_at`
-- **oauth_accounts**: `id`, `user_id` → users, `provider`, `provider_user_id`, `created_at`, unique `(provider, provider_user_id)`
+- **oauth_accounts**: `id`, `user_id` → users, `provider` (CHECK: поки лише `github`), `provider_user_id`, `created_at`, unique `(provider, provider_user_id)` і unique `(user_id, provider)` — він же індекс для пошуку за `user_id`
 
 Таблиці з'являються поступово, через міграції: `users` і `habits` у фазі 1, `habit_checks` і `timezone` у фазі 3, `password_hash`, `refresh_tokens` і `oauth_accounts` у фазі 4.
 

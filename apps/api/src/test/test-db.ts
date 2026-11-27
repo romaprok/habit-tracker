@@ -21,7 +21,7 @@ export function createTestDb() {
 
   async function reset() {
     await db.execute(
-      sql`TRUNCATE users, habits, habit_checks, refresh_tokens RESTART IDENTITY CASCADE`,
+      sql`TRUNCATE users, habits, habit_checks, refresh_tokens, oauth_accounts RESTART IDENTITY CASCADE`,
     )
   }
 

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { habitChecks, habits, users } from './schema.js'
+import { habitChecks, habits, oauthAccounts, users } from './schema.js'
 import { createTestDb } from '../test/test-db.js'
 
 describe('habit_checks and users.timezone', () => {
@@ -61,5 +61,62 @@ describe('habit_checks and users.timezone', () => {
     await db.delete(habits).where(eq(habits.id, habit.id))
 
     expect(await db.$count(habitChecks)).toBe(0)
+  })
+})
+
+describe('oauth_accounts', () => {
+  const { pool, db, reset } = createTestDb()
+
+  beforeEach(reset)
+  afterAll(() => pool.end())
+
+  async function createUser(email = 'a@test.local') {
+    const [user] = await db.insert(users).values({ email }).returning()
+    return user
+  }
+
+  it('links a GitHub account to one user only', async () => {
+    const a = await createUser()
+    const b = await createUser('b@test.local')
+    const github = { provider: 'github', providerUserId: '583231' }
+    await db.insert(oauthAccounts).values({ userId: a.id, ...github })
+
+    await expect(
+      db.insert(oauthAccounts).values({ userId: b.id, ...github }),
+    ).rejects.toMatchObject({ cause: { code: '23505' } })
+  })
+
+  it('allows at most one account per provider for a user', async () => {
+    const user = await createUser()
+    await db
+      .insert(oauthAccounts)
+      .values({ userId: user.id, provider: 'github', providerUserId: '1' })
+
+    await expect(
+      db
+        .insert(oauthAccounts)
+        .values({ userId: user.id, provider: 'github', providerUserId: '2' }),
+    ).rejects.toMatchObject({ cause: { code: '23505' } })
+  })
+
+  it('rejects an unknown provider', async () => {
+    const user = await createUser()
+
+    await expect(
+      db
+        .insert(oauthAccounts)
+        .values({ userId: user.id, provider: 'myspace', providerUserId: '1' }),
+    ).rejects.toMatchObject({ cause: { code: '23514' } })
+  })
+
+  it('is deleted together with its user', async () => {
+    const user = await createUser()
+    await db
+      .insert(oauthAccounts)
+      .values({ userId: user.id, provider: 'github', providerUserId: '1' })
+
+    await db.delete(users).where(eq(users.id, user.id))
+
+    expect(await db.$count(oauthAccounts)).toBe(0)
   })
 })
