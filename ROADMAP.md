@@ -92,7 +92,7 @@ habit-tracker/
 | Factory для middleware                  | `validate(schema)` повертає middleware, що перевіряє запит конкретною Zod-схемою                                                                                          | `BE-09`                    |
 | DTO                                     | Окремі схеми для входу (`CreateHabit`, `UpdateHabit`) — клієнт не підсуне чужий `user_id`                                                                                 | `SH-02`, `BE-10`           |
 | Транзакція (Unit of Work)               | Кілька змін у базі або всі разом, або жодної: ідемпотентний seed, ротація refresh-токена, перестановка звичок                                                             | `BE-05`, `BE-24`, `EXT-29` |
-| Adapter                                 | GitHub API за нашим інтерфейсом; у тестах підміняємо його фейком                                                                                                          | `BE-31`, `BE-33`           |
+| Adapter                                 | GitHub API за нашим інтерфейсом; у тестах підміняємо його фейком                                                                                                          | `BE-30`, `BE-31`, `BE-33`  |
 | Strategy                                | Вхід паролем і через GitHub — різні способи з однаковим результатом (наш JWT); `requireAuth` не знає, як увійшли                                                          | `BE-19`, `BE-32`           |
 | Inversion of Control (DI-контейнер)     | Те саме, що ручна DI з `BE-04`, але залежності збирає Nest; guards, pipes і interceptors — фреймворкові версії наших middleware. Порівнюємо                               | фаза 7                     |
 

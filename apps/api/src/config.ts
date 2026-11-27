@@ -24,6 +24,8 @@ const envSchema = z
       .default('http://localhost:5173')
       .transform((value) => value.split(',').map((origin) => origin.trim()))
       .pipe(z.array(z.url())),
+    // The web app's own URL: OAuth callbacks and redirects are built from it.
+    WEB_URL: z.url().default('http://localhost:5173'),
     // GitHub OAuth App (Settings → Developer settings → OAuth Apps).
     // Optional: without them the API runs, only "Sign in with GitHub" is off.
     GITHUB_CLIENT_ID: optionalString,

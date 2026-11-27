@@ -191,7 +191,7 @@
 
 - [x] `BE-28` · 1 — OAuth App у GitHub; `GITHUB_CLIENT_ID` і `GITHUB_CLIENT_SECRET` у конфіг · _після: BE-02_
 - [x] `BE-29` · 1 — Міграція: таблиця `oauth_accounts` · _після: BE-17_
-- [ ] `BE-30` · 2 — `GET /api/auth/github`: генерує `state`, кладе його в коротку httpOnly cookie, редіректить на GitHub · _після: BE-28_
+- [x] `BE-30` · 2 — `GET /api/auth/github`: генерує `state`, кладе його в коротку httpOnly cookie, редіректить на GitHub · _після: BE-28_
 - [ ] `BE-31` · 5 — Callback: перевірка `state`, обмін `code` на токен, запит `/user` і `/user/emails` · _після: BE-30_
 - [ ] `BE-32` · 3 — Знайти або створити користувача; прив'язка за email лише до підтвердженого email; видати наші токени й редірект на фронт · _після: BE-23, BE-29, BE-31_
 - [ ] `BE-33` · 3 — Тести callback із замоканим GitHub · _після: BE-32_

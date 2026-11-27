@@ -32,6 +32,9 @@ import { createHealthController } from './modules/health/health.controller.js'
 import { createHealthRepository } from './modules/health/health.repository.js'
 import { createHealthRouter } from './modules/health/health.router.js'
 import { createHealthService } from './modules/health/health.service.js'
+import type { GitHubClient } from './modules/oauth/github.client.js'
+import { createGitHubController } from './modules/oauth/github.controller.js'
+import { createGitHubRouter } from './modules/oauth/github.router.js'
 import { createTodayRepository } from './modules/today/today.repository.js'
 import { createTodayRouter } from './modules/today/today.router.js'
 import { createTodayService } from './modules/today/today.service.js'
@@ -45,9 +48,14 @@ export type AppDeps = {
   accessTokenTtlSeconds?: number
   authRateLimit?: RateLimitOptions
   allowedOrigins?: string[]
+  // null: GitHub sign-in is not configured.
+  github?: GitHubClient | null
+  // Where the web app lives: OAuth redirects send the browser back there.
+  webUrl?: string
 }
 
-const DEV_ORIGINS = ['http://localhost:5173']
+const DEV_WEB_URL = 'http://localhost:5173'
+const DEV_ORIGINS = [DEV_WEB_URL]
 
 export function createApp({
   pool,
@@ -56,6 +64,8 @@ export function createApp({
   accessTokenTtlSeconds,
   authRateLimit = AUTH_RATE_LIMIT,
   allowedOrigins = DEV_ORIGINS,
+  github = null,
+  webUrl = DEV_WEB_URL,
 }: AppDeps) {
   const app = express()
 
@@ -100,6 +110,13 @@ export function createApp({
   })
   const requireAuth = createRequireAuth(tokens)
   app.use('/api', createAuthRouter(authController, requireAuth, authRateLimit))
+
+  const githubController = createGitHubController({
+    github,
+    webUrl,
+    secureCookies,
+  })
+  app.use('/api', createGitHubRouter(githubController))
 
   const habitsController = createHabitsController(
     createHabitsService(habitsRepository),
