@@ -1,0 +1,4 @@
+# Stats. Log in first (auth.http).
+
+### Current and longest streak of every habit
+GET {{baseUrl}}/streaks

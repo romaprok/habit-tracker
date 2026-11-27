@@ -37,6 +37,9 @@ import { createGitHubController } from './modules/oauth/github.controller.js'
 import { createGitHubRouter } from './modules/oauth/github.router.js'
 import { createOAuthAccountsRepository } from './modules/oauth/oauth-accounts.repository.js'
 import { createOAuthService } from './modules/oauth/oauth.service.js'
+import { createStatsRepository } from './modules/stats/stats.repository.js'
+import { createStatsRouter } from './modules/stats/stats.router.js'
+import { createStatsService } from './modules/stats/stats.service.js'
 import { createTodayRepository } from './modules/today/today.repository.js'
 import { createTodayRouter } from './modules/today/today.router.js'
 import { createTodayService } from './modules/today/today.service.js'
@@ -145,6 +148,12 @@ export function createApp({
     users: usersService,
   })
   app.use('/api', createTodayRouter(todayService, requireAuth))
+
+  const statsService = createStatsService({
+    stats: createStatsRepository(db),
+    users: usersService,
+  })
+  app.use('/api', createStatsRouter(statsService, requireAuth))
 
   app.use(notFound)
   app.use(errorHandler)
