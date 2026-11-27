@@ -45,6 +45,12 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message = 'Forbidden') {
+    super(403, 'FORBIDDEN', message)
+  }
+}
+
 export class TooManyRequestsError extends AppError {
   constructor(message = 'Too many attempts, please try again later') {
     super(429, 'TOO_MANY_REQUESTS', message)

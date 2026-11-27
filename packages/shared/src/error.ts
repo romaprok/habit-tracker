@@ -4,6 +4,7 @@ export const ErrorCodeSchema = z.enum([
   'NOT_FOUND',
   'VALIDATION_ERROR',
   'UNAUTHORIZED',
+  'FORBIDDEN',
   'CONFLICT',
   'TOO_MANY_REQUESTS',
   'INTERNAL_ERROR',

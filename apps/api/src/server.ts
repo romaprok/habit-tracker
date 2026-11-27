@@ -9,6 +9,7 @@ const app = createApp({
   jwtSecret: config.JWT_SECRET,
   secureCookies: config.NODE_ENV === 'production',
   accessTokenTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,
+  allowedOrigins: config.ALLOWED_ORIGINS,
 })
 
 app.listen(config.PORT, (error) => {

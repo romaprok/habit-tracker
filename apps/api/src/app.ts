@@ -6,6 +6,7 @@ import { pinoHttp } from 'pino-http'
 
 import { createDb } from './db/client.js'
 import { logger } from './logger.js'
+import { createCheckOrigin } from './middleware/check-origin.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
 import {
@@ -43,7 +44,10 @@ export type AppDeps = {
   secureCookies: boolean
   accessTokenTtlSeconds?: number
   authRateLimit?: RateLimitOptions
+  allowedOrigins?: string[]
 }
+
+const DEV_ORIGINS = ['http://localhost:5173']
 
 export function createApp({
   pool,
@@ -51,6 +55,7 @@ export function createApp({
   secureCookies,
   accessTokenTtlSeconds,
   authRateLimit = AUTH_RATE_LIMIT,
+  allowedOrigins = DEV_ORIGINS,
 }: AppDeps) {
   const app = express()
 
@@ -59,6 +64,7 @@ export function createApp({
 
   app.use(json())
   app.use(cookieParser())
+  app.use('/api', createCheckOrigin(allowedOrigins))
 
   app.use(
     pinoHttp({
