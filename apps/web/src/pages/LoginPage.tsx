@@ -1,16 +1,13 @@
-import { useNavigate } from 'react-router'
-
 import { TextLink } from '../components/TextLink.tsx'
 import { AuthForm, type Credentials } from '../features/auth/AuthForm.tsx'
 import { useLogin } from '../features/auth/mutations.ts'
 
 export function LoginPage() {
-  const navigate = useNavigate()
   const login = useLogin()
 
   async function handleSubmit(credentials: Credentials) {
     await login.mutateAsync(credentials)
-    navigate('/', { replace: true })
+    // <GuestOnly> sees the new user and redirects back to where they came from.
   }
 
   return (

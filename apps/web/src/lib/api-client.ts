@@ -4,6 +4,9 @@ type Parser<T> = { parse: (data: unknown) => T }
 
 type RequestOptions = { signal?: AbortSignal }
 
+// For 204 No Content answers: there is no body to parse.
+export const noContent: Parser<void> = { parse: () => undefined }
+
 type RawResponse = { status: number; body: unknown }
 
 export class ApiError extends Error {

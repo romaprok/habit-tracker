@@ -8,7 +8,7 @@ import {
 } from '@habit-tracker/shared'
 
 import { authKeys } from './auth-keys.ts'
-import { api } from '../../lib/api-client.ts'
+import { api, noContent } from '../../lib/api-client.ts'
 
 function useSignIn<T>(path: string) {
   const queryClient = useQueryClient()
@@ -30,4 +30,17 @@ export function useLogin() {
 
 export function useRegister() {
   return useSignIn<Register>('/auth/register')
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => api.post('/auth/logout', {}, noContent),
+    onSuccess: () => {
+      // Drop everything cached for the previous user, then mark "logged out".
+      queryClient.clear()
+      queryClient.setQueryData(authKeys.me, null)
+    },
+  })
 }

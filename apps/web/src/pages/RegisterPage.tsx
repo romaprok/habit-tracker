@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router'
-
 import { TextLink } from '../components/TextLink.tsx'
 import { AuthForm, type Credentials } from '../features/auth/AuthForm.tsx'
 import { useRegister } from '../features/auth/mutations.ts'
@@ -9,7 +7,6 @@ function browserTimeZone() {
 }
 
 export function RegisterPage() {
-  const navigate = useNavigate()
   const registerUser = useRegister()
 
   async function handleSubmit(credentials: Credentials) {
@@ -17,7 +14,7 @@ export function RegisterPage() {
       ...credentials,
       timezone: browserTimeZone(),
     })
-    navigate('/', { replace: true })
+    // <GuestOnly> sees the new user and redirects back to where they came from.
   }
 
   return (

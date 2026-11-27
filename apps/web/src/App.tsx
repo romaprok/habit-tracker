@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 
 import { Layout } from './components/Layout.tsx'
+import { GuestOnly, RequireAuth } from './features/auth/AuthGate.tsx'
 import { EditHabitPage } from './pages/EditHabitPage.tsx'
 import { HabitsPage } from './pages/HabitsPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
@@ -14,12 +15,16 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<TodayPage />} />
-          <Route path="habits" element={<HabitsPage />} />
-          <Route path="habits/new" element={<NewHabitPage />} />
-          <Route path="habits/:id/edit" element={<EditHabitPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
+          <Route element={<RequireAuth />}>
+            <Route index element={<TodayPage />} />
+            <Route path="habits" element={<HabitsPage />} />
+            <Route path="habits/new" element={<NewHabitPage />} />
+            <Route path="habits/:id/edit" element={<EditHabitPage />} />
+          </Route>
+          <Route element={<GuestOnly />}>
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+          </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
