@@ -7,6 +7,9 @@ import { logger } from './logger.js'
 import { createDemoUserMiddleware } from './middleware/demo-user.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
+import { createAuthController } from './modules/auth/auth.controller.js'
+import { createAuthRouter } from './modules/auth/auth.router.js'
+import { createAuthService } from './modules/auth/auth.service.js'
 import { createChecksController } from './modules/checks/checks.controller.js'
 import { createChecksRepository } from './modules/checks/checks.repository.js'
 import { createChecksRouter } from './modules/checks/checks.router.js'
@@ -53,6 +56,11 @@ export function createApp({ pool }: AppDeps) {
   const habitsRepository = createHabitsRepository(db)
   const usersService = createUsersService(usersRepository)
   const demoUser = createDemoUserMiddleware(usersRepository)
+
+  const authController = createAuthController(
+    createAuthService({ users: usersRepository }),
+  )
+  app.use('/api', createAuthRouter(authController))
 
   const habitsController = createHabitsController(
     createHabitsService(habitsRepository),

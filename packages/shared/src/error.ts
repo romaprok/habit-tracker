@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const ErrorCodeSchema = z.enum([
   'NOT_FOUND',
   'VALIDATION_ERROR',
+  'CONFLICT',
   'INTERNAL_ERROR',
 ])
 

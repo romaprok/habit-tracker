@@ -159,7 +159,7 @@
 
 - [x] `BE-17` · 1 — Міграція: `users.password_hash` (nullable); demo-користувач у seed отримує пароль · _після: BE-05_
 - [x] `SH-04` · 1 — Схеми `Register`, `Login` і `User` · _після: SH-01_
-- [ ] `BE-18` · 3 — `POST /api/auth/register`: валідація, хеш argon2, зайнятий email → 409 · _після: BE-17, SH-04_
+- [x] `BE-18` · 3 — `POST /api/auth/register`: валідація, хеш argon2, зайнятий email → 409 · _після: BE-17, SH-04_
 - [ ] `BE-19` · 3 — `POST /api/auth/login`: JWT в httpOnly cookie (поки один токен на 7 днів); однакова відповідь на «немає email» і «невірний пароль»; `redact` у `logger.ts`, щоб заголовки `cookie`, `authorization` і `set-cookie` не потрапляли в логи · _після: BE-18_
 - [ ] `BE-20` · 2 — Middleware `requireAuth`, `GET /api/auth/me`, `POST /api/auth/logout` · _після: BE-19_
 - [ ] `BE-21` · 3 — Прибрати demo-користувача з коду: усі маршрути звичок і відміток беруть `req.user.id` · _після: BE-20_
