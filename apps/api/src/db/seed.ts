@@ -5,6 +5,8 @@ import { createDb, createPool } from './client.js'
 import { DEMO_USER_EMAIL as DEMO_EMAIL } from './demo.js'
 import { habits, users } from './schema.js'
 
+const DEMO_TIMEZONE = 'Europe/Kyiv'
+
 const pool = createPool(config.DATABASE_URL)
 const db = createDb(pool)
 
@@ -12,8 +14,11 @@ try {
   await db.transaction(async (tx) => {
     const [demo] = await tx
       .insert(users)
-      .values({ email: DEMO_EMAIL })
-      .onConflictDoUpdate({ target: users.email, set: { email: DEMO_EMAIL } })
+      .values({ email: DEMO_EMAIL, timezone: DEMO_TIMEZONE })
+      .onConflictDoUpdate({
+        target: users.email,
+        set: { timezone: DEMO_TIMEZONE },
+      })
       .returning()
 
     await tx.delete(habits).where(eq(habits.userId, demo.id))
