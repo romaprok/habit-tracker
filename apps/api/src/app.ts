@@ -35,6 +35,8 @@ import { createHealthService } from './modules/health/health.service.js'
 import type { GitHubClient } from './modules/oauth/github.client.js'
 import { createGitHubController } from './modules/oauth/github.controller.js'
 import { createGitHubRouter } from './modules/oauth/github.router.js'
+import { createOAuthAccountsRepository } from './modules/oauth/oauth-accounts.repository.js'
+import { createOAuthService } from './modules/oauth/oauth.service.js'
 import { createTodayRepository } from './modules/today/today.repository.js'
 import { createTodayRouter } from './modules/today/today.router.js'
 import { createTodayService } from './modules/today/today.service.js'
@@ -113,8 +115,14 @@ export function createApp({
 
   const githubController = createGitHubController({
     github,
+    oauth: createOAuthService({
+      accounts: createOAuthAccountsRepository(db),
+      users: usersRepository,
+    }),
+    sessions,
     webUrl,
     secureCookies,
+    accessTtlSeconds: tokens.accessTtlSeconds,
   })
   app.use('/api', createGitHubRouter(githubController))
 

@@ -8,18 +8,27 @@ import {
   statesMatch,
   OAUTH_STATE_COOKIE,
 } from './oauth-state.js'
+import { OAuthSignInError, type OAuthService } from './oauth.service.js'
 import { logger } from '../../logger.js'
+import { setSessionCookies } from '../auth/cookies.js'
+import type { SessionService } from '../auth/session.service.js'
 
 type Deps = {
   github: GitHubClient | null
+  oauth: OAuthService
+  sessions: SessionService
   webUrl: string
   secureCookies: boolean
+  accessTtlSeconds: number
 }
 
 export function createGitHubController({
   github,
+  oauth,
+  sessions,
   webUrl,
   secureCookies,
+  accessTtlSeconds,
 }: Deps) {
   function backToLogin(res: Response, error: string) {
     res.redirect(`${webUrl}/login?error=${error}`)
@@ -53,10 +62,18 @@ export function createGitHubController({
       try {
         const token = await github.exchangeCode(code)
         const profile = await github.fetchProfile(token)
-        // Finding or creating our user from the profile comes in BE-32.
-        logger.info({ githubId: profile.id }, 'GitHub profile received')
-        backToLogin(res, 'github_not_ready')
+        const userId = await oauth.signInWithGitHub(profile)
+        // From here on it is an ordinary session, same as after a password
+        // login: requireAuth does not know how the user signed in.
+        setSessionCookies(res, await sessions.start(userId), {
+          secure: secureCookies,
+          accessTtlSeconds,
+        })
+        res.redirect(`${webUrl}/`)
       } catch (err) {
+        if (err instanceof OAuthSignInError) {
+          return backToLogin(res, `github_${err.reason}`)
+        }
         logger.warn({ err }, 'GitHub sign-in failed')
         backToLogin(res, 'github_failed')
       }
