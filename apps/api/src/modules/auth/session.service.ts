@@ -45,6 +45,13 @@ export function createSessionService({
       return { accessToken: await tokens.signAccessToken(userId), refreshToken }
     },
 
+    // Logout: this device's refresh token stops working right away.
+    // The access token still lives up to its short TTL — that is the trade-off
+    // of a stateless JWT, and why it is short.
+    async end(refreshToken: string) {
+      await refreshTokens.deleteByHash(hashRefreshToken(refreshToken))
+    },
+
     // Rotation: the old refresh token is marked used and a new one is stored
     // in the same transaction — either both happen or neither does.
     async refresh(oldToken: string): Promise<Session> {

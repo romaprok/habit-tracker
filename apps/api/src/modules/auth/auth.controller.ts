@@ -57,7 +57,9 @@ export function createAuthController({
       }
     },
 
-    logout(_req: Request, res: Response) {
+    async logout(req: Request, res: Response) {
+      const token: unknown = req.cookies?.[REFRESH_COOKIE]
+      if (typeof token === 'string') await sessions.end(token)
       clearAuthCookies(res, secureCookies)
       res.status(204).end()
     },

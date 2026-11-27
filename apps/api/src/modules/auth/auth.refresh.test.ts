@@ -100,6 +100,23 @@ describe('POST /api/auth/refresh', () => {
     expect((await refresh(legit)).status).toBe(401)
   })
 
+  it('stops accepting the refresh token after logout', async () => {
+    const { refreshToken } = await signUp()
+
+    const logout = await request(app)
+      .post('/api/auth/logout')
+      .set('Cookie', `${REFRESH_COOKIE}=${refreshToken}`)
+
+    expect(logout.status).toBe(204)
+    expect(cookieValue(logout, REFRESH_COOKIE)).toBe('')
+    expect(await rowFor(refreshToken)).toBeUndefined()
+    expect((await refresh(refreshToken)).status).toBe(401)
+  })
+
+  it('logs out with 204 even without a refresh cookie', async () => {
+    expect((await request(app).post('/api/auth/logout')).status).toBe(204)
+  })
+
   it('lets only one of two parallel requests exchange the same token', async () => {
     const { refreshToken } = await signUp()
 

@@ -17,7 +17,7 @@ GET {{baseUrl}}/auth/me
 # Run it twice with an old cookie copied by hand to see reuse detection.
 POST {{baseUrl}}/auth/refresh
 
-### Log out: clears the session cookie
+### Log out: revokes the refresh token and clears both cookies
 POST {{baseUrl}}/auth/logout
 
 ### Register a new account (409 if the email is taken)

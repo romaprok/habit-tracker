@@ -36,6 +36,12 @@ function queries(db: DbOrTx) {
       return row ?? null
     },
 
+    async deleteByHash(tokenHash: string) {
+      await db
+        .delete(refreshTokens)
+        .where(eq(refreshTokens.tokenHash, tokenHash))
+    },
+
     async deleteAllForUser(userId: string) {
       await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId))
     },
