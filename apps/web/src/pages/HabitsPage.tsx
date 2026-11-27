@@ -6,6 +6,10 @@ import { useChecks, type ChecksByHabit } from '../features/checks/useChecks.ts'
 import { HabitCard } from '../features/habits/HabitCard.tsx'
 import { useDeleteHabit } from '../features/habits/mutations.ts'
 import { useHabits, type HabitsState } from '../features/habits/useHabits.ts'
+import {
+  useStreaks,
+  type CurrentStreaks,
+} from '../features/stats/useStreaks.ts'
 import { useToday } from '../features/today/useToday.ts'
 import { ApiError } from '../lib/api-client.ts'
 import { lastDays } from '../lib/dates.ts'
@@ -17,6 +21,7 @@ type HabitsContentProps = {
   deletingId: string | null
   days: string[]
   checks: ChecksByHabit | undefined
+  streaks: CurrentStreaks | undefined
   onRetry: () => void
   onDelete: (habit: Habit) => void
 }
@@ -26,6 +31,7 @@ function HabitsContent({
   deletingId,
   days,
   checks,
+  streaks,
   onRetry,
   onDelete,
 }: HabitsContentProps) {
@@ -62,6 +68,7 @@ function HabitsContent({
               habit={habit}
               days={days}
               checkedDates={checks?.get(habit.id) ?? EMPTY_DATES}
+              streak={streaks?.get(habit.id)}
               deleting={deletingId === habit.id}
               onDelete={onDelete}
             />
@@ -78,6 +85,7 @@ export function HabitsPage() {
   const { state: today } = useToday()
   const days = today.status === 'success' ? lastDays(today.date, 7) : []
   const { data: checks } = useChecks(days[0], days.at(-1))
+  const { data: streaks } = useStreaks()
   const deleteMutation = useDeleteHabit()
   const deletingId = deleteMutation.isPending ? deleteMutation.variables : null
 
@@ -107,6 +115,7 @@ export function HabitsPage() {
         deletingId={deletingId}
         days={days}
         checks={checks}
+        streaks={streaks}
         onRetry={retry}
         onDelete={deleteHabit}
       />

@@ -3,11 +3,13 @@ import type { Habit } from '@habit-tracker/shared'
 import { WeekGrid } from './WeekGrid.tsx'
 import { Button } from '../../components/Button.tsx'
 import { TextLink } from '../../components/TextLink.tsx'
+import { StreakBadge } from '../stats/StreakBadge.tsx'
 
 type HabitCardProps = {
   habit: Habit
   days: string[]
   checkedDates: ReadonlySet<string>
+  streak: number | undefined
   deleting: boolean
   onDelete: (habit: Habit) => void
 }
@@ -16,6 +18,7 @@ export function HabitCard({
   habit,
   days,
   checkedDates,
+  streak,
   deleting,
   onDelete,
 }: HabitCardProps) {
@@ -28,7 +31,10 @@ export function HabitCard({
           style={{ backgroundColor: habit.color }}
         />
         <div className="min-w-0">
-          <h2 className="font-medium break-words">{habit.name}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-medium break-words">{habit.name}</h2>
+            <StreakBadge days={streak} />
+          </div>
           {habit.description && (
             <p className="text-sm break-words text-slate-500">
               {habit.description}

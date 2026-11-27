@@ -4,6 +4,7 @@ import type { TodayItem } from '@habit-tracker/shared'
 
 import { Button } from '../components/Button.tsx'
 import { TextLink } from '../components/TextLink.tsx'
+import { useStreaks } from '../features/stats/useStreaks.ts'
 import { TodayItemRow } from '../features/today/TodayItemRow.tsx'
 import { useToday } from '../features/today/useToday.ts'
 import {
@@ -16,6 +17,7 @@ import { formatDay } from '../lib/dates.ts'
 export function TodayPage() {
   const { state, retry } = useToday()
   const toggle = useToggleCheck()
+  const { data: streaks } = useStreaks()
 
   function toggleItem(item: TodayItem) {
     if (state.status !== 'success') return
@@ -73,6 +75,7 @@ export function TodayPage() {
             <TodayItemRow
               key={item.habit.id}
               item={item}
+              streak={streaks?.get(item.habit.id)}
               pending={pendingIds.includes(item.habit.id)}
               onToggle={toggleItem}
             />

@@ -1,12 +1,20 @@
 import type { TodayItem } from '@habit-tracker/shared'
 
+import { StreakBadge } from '../stats/StreakBadge.tsx'
+
 type TodayItemRowProps = {
   item: TodayItem
+  streak: number | undefined
   pending: boolean
   onToggle: (item: TodayItem) => void
 }
 
-export function TodayItemRow({ item, pending, onToggle }: TodayItemRowProps) {
+export function TodayItemRow({
+  item,
+  streak,
+  pending,
+  onToggle,
+}: TodayItemRowProps) {
   const id = `today-${item.habit.id}`
 
   return (
@@ -32,6 +40,9 @@ export function TodayItemRow({ item, pending, onToggle }: TodayItemRowProps) {
           className={`break-words ${item.checked ? 'text-slate-400 line-through' : ''}`}
         >
           {item.habit.name}
+        </span>
+        <span className="ml-auto">
+          <StreakBadge days={streak} />
         </span>
       </label>
     </li>
