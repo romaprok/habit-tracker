@@ -4,6 +4,7 @@ import { Layout } from './components/Layout.tsx'
 import { GuestOnly, RequireAuth } from './features/auth/AuthGate.tsx'
 import { EditHabitPage } from './pages/EditHabitPage.tsx'
 import { HabitsPage } from './pages/HabitsPage.tsx'
+import { HabitStatsPage } from './pages/HabitStatsPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
 import { NewHabitPage } from './pages/NewHabitPage.tsx'
 import { NotFoundPage } from './pages/NotFoundPage.tsx'
@@ -20,6 +21,7 @@ const App = () => {
             <Route path="habits" element={<HabitsPage />} />
             <Route path="habits/new" element={<NewHabitPage />} />
             <Route path="habits/:id/edit" element={<EditHabitPage />} />
+            <Route path="habits/:id/stats" element={<HabitStatsPage />} />
           </Route>
           <Route element={<GuestOnly />}>
             <Route path="login" element={<LoginPage />} />

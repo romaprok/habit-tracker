@@ -51,6 +51,12 @@ export function HabitCard({
       </div>
       <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3 sm:border-0 sm:pt-0">
         <TextLink
+          to={`/habits/${habit.id}/stats`}
+          className="inline-flex min-h-11 items-center px-2 text-sm sm:min-h-9"
+        >
+          Stats
+        </TextLink>
+        <TextLink
           to={`/habits/${habit.id}/edit`}
           className="inline-flex min-h-11 items-center px-2 text-sm sm:min-h-9"
         >
