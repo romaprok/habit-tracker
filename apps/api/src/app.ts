@@ -1,5 +1,6 @@
 import cookieParser from 'cookie-parser'
 import express, { json } from 'express'
+import helmet from 'helmet'
 import type { Pool } from 'pg'
 import { pinoHttp } from 'pino-http'
 
@@ -7,6 +8,10 @@ import { createDb } from './db/client.js'
 import { logger } from './logger.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { notFound } from './middleware/not-found.js'
+import {
+  AUTH_RATE_LIMIT,
+  type RateLimitOptions,
+} from './middleware/rate-limit.js'
 import { createRequireAuth } from './middleware/require-auth.js'
 import { createAuthController } from './modules/auth/auth.controller.js'
 import { createAuthRouter } from './modules/auth/auth.router.js'
@@ -37,6 +42,7 @@ export type AppDeps = {
   jwtSecret: string
   secureCookies: boolean
   accessTokenTtlSeconds?: number
+  authRateLimit?: RateLimitOptions
 }
 
 export function createApp({
@@ -44,8 +50,12 @@ export function createApp({
   jwtSecret,
   secureCookies,
   accessTokenTtlSeconds,
+  authRateLimit = AUTH_RATE_LIMIT,
 }: AppDeps) {
   const app = express()
+
+  // Security headers (nosniff, frame-ancestors, HSTS…) and no X-Powered-By.
+  app.use(helmet())
 
   app.use(json())
   app.use(cookieParser())
@@ -83,7 +93,7 @@ export function createApp({
     secureCookies,
   })
   const requireAuth = createRequireAuth(tokens)
-  app.use('/api', createAuthRouter(authController, requireAuth))
+  app.use('/api', createAuthRouter(authController, requireAuth, authRateLimit))
 
   const habitsController = createHabitsController(
     createHabitsService(habitsRepository),
