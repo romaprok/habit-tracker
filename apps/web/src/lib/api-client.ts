@@ -28,13 +28,48 @@ export class ApiError extends Error {
 
 const BASE_URL = '/api'
 
-async function send(path: string, init: RequestInit): Promise<RawResponse> {
-  let res: Response
+// Endpoints where a 401 is the final answer: wrong password, dead refresh
+// token… Refreshing there would loop or hide the real error.
+const NO_REFRESH = new Set([
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh',
+  '/auth/logout',
+])
+
+let refreshing: Promise<boolean> | null = null
+
+// Single flight: five requests that hit 401 together share one refresh call.
+// A second refresh with the same cookie would look like token reuse to the
+// API and end the session.
+function refreshSession(): Promise<boolean> {
+  refreshing ??= fetch(`${BASE_URL}/auth/refresh`, { method: 'POST' })
+    .then(
+      (res) => res.ok,
+      () => false,
+    )
+    .finally(() => {
+      refreshing = null
+    })
+  return refreshing
+}
+
+async function request(path: string, init: RequestInit): Promise<Response> {
   try {
-    res = await fetch(`${BASE_URL}${path}`, init)
+    return await fetch(`${BASE_URL}${path}`, init)
   } catch (err) {
     if (init.signal?.aborted) throw err
     throw new ApiError(0, 'Network error: the server is unreachable')
+  }
+}
+
+async function send(path: string, init: RequestInit): Promise<RawResponse> {
+  let res = await request(path, init)
+
+  // The access token lives 15 minutes: on 401 try to renew it once and repeat
+  // the request. If the refresh fails too, the 401 goes to the caller.
+  if (res.status === 401 && !NO_REFRESH.has(path) && (await refreshSession())) {
+    res = await request(path, init)
   }
 
   const body: unknown = await res.json().catch((err: unknown) => {
