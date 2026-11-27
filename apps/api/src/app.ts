@@ -151,6 +151,7 @@ export function createApp({
 
   const statsService = createStatsService({
     stats: createStatsRepository(db),
+    habits: habitsRepository,
     users: usersService,
   })
   app.use('/api', createStatsRouter(statsService, requireAuth))

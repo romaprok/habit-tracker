@@ -2,3 +2,6 @@
 
 ### Current and longest streak of every habit
 GET {{baseUrl}}/streaks
+
+### Year heatmap and streak of one habit (put a real id from GET /habits)
+GET {{baseUrl}}/habits/00000000-0000-0000-0000-000000000000/stats
