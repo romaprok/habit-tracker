@@ -4,7 +4,11 @@ import { createPool } from './db/client.js'
 import { logger } from './logger.js'
 
 const pool = createPool(config.DATABASE_URL)
-const app = createApp({ pool })
+const app = createApp({
+  pool,
+  jwtSecret: config.JWT_SECRET,
+  secureCookies: config.NODE_ENV === 'production',
+})
 
 app.listen(config.PORT, (error) => {
   if (error) throw error

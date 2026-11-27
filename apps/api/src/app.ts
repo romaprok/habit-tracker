@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser'
 import express, { json } from 'express'
 import type { Pool } from 'pg'
 import { pinoHttp } from 'pino-http'
@@ -10,6 +11,7 @@ import { notFound } from './middleware/not-found.js'
 import { createAuthController } from './modules/auth/auth.controller.js'
 import { createAuthRouter } from './modules/auth/auth.router.js'
 import { createAuthService } from './modules/auth/auth.service.js'
+import { createTokenService } from './modules/auth/tokens.js'
 import { createChecksController } from './modules/checks/checks.controller.js'
 import { createChecksRepository } from './modules/checks/checks.repository.js'
 import { createChecksRouter } from './modules/checks/checks.router.js'
@@ -28,12 +30,17 @@ import { createTodayService } from './modules/today/today.service.js'
 import { createUsersRepository } from './modules/users/users.repository.js'
 import { createUsersService } from './modules/users/users.service.js'
 
-export type AppDeps = { pool: Pool }
+export type AppDeps = {
+  pool: Pool
+  jwtSecret: string
+  secureCookies: boolean
+}
 
-export function createApp({ pool }: AppDeps) {
+export function createApp({ pool, jwtSecret, secureCookies }: AppDeps) {
   const app = express()
 
   app.use(json())
+  app.use(cookieParser())
 
   app.use(
     pinoHttp({
@@ -57,9 +64,12 @@ export function createApp({ pool }: AppDeps) {
   const usersService = createUsersService(usersRepository)
   const demoUser = createDemoUserMiddleware(usersRepository)
 
-  const authController = createAuthController(
-    createAuthService({ users: usersRepository }),
-  )
+  const tokens = createTokenService(jwtSecret)
+  const authController = createAuthController({
+    service: createAuthService({ users: usersRepository }),
+    tokens,
+    secureCookies,
+  })
   app.use('/api', createAuthRouter(authController))
 
   const habitsController = createHabitsController(

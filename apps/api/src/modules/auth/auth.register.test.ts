@@ -4,13 +4,13 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { ErrorResponseSchema, UserResponseSchema } from '@habit-tracker/shared'
 
-import { createApp } from '../../app.js'
 import { users } from '../../db/schema.js'
+import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
 describe('POST /api/auth/register', () => {
   const { pool, db, reset } = createTestDb()
-  const app = createApp({ pool })
+  const app = createTestApp(pool)
 
   beforeEach(reset)
   afterAll(() => pool.end())

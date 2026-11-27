@@ -2,10 +2,10 @@ import { and, eq } from 'drizzle-orm'
 import request from 'supertest'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { createApp } from '../../app.js'
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habitChecks, habits, users } from '../../db/schema.js'
 import { todayIn } from '../../lib/dates.js'
+import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
 const KIRITIMATI = 'Pacific/Kiritimati'
@@ -19,7 +19,7 @@ function addDays(date: string, days: number) {
 
 describe('PUT and DELETE /api/habits/:id/checks/:date', () => {
   const { pool, db, reset } = createTestDb()
-  const app = createApp({ pool })
+  const app = createTestApp(pool)
 
   beforeEach(reset)
   afterAll(() => pool.end())

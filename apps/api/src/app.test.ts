@@ -3,12 +3,12 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { ErrorResponseSchema } from '@habit-tracker/shared'
 
-import { createApp } from './app.js'
+import { createTestApp } from './test/test-app.js'
 import { createTestDb } from './test/test-db.js'
 
 describe('app error handling', () => {
   const { pool, reset } = createTestDb()
-  const app = createApp({ pool })
+  const app = createTestApp(pool)
 
   beforeEach(reset)
   afterAll(() => pool.end())

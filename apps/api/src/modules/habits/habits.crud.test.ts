@@ -4,16 +4,16 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { ErrorResponseSchema, HabitResponseSchema } from '@habit-tracker/shared'
 
-import { createApp } from '../../app.js'
 import { DEMO_USER_EMAIL } from '../../db/demo.js'
 import { habits, users } from '../../db/schema.js'
+import { createTestApp } from '../../test/test-app.js'
 import { createTestDb } from '../../test/test-db.js'
 
 const MISSING_ID = '0195f1a2-7c3e-7a00-8000-000000000001'
 
 describe('habits CRUD', () => {
   const { pool, db, reset } = createTestDb()
-  const app = createApp({ pool })
+  const app = createTestApp(pool)
 
   beforeEach(reset)
   afterAll(() => pool.end())
