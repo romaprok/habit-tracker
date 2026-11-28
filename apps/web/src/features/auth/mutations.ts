@@ -38,9 +38,15 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api.post('/auth/logout', {}, noContent),
     onSuccess: () => {
-      // Drop everything cached for the previous user, then mark "logged out".
-      queryClient.clear()
+      // First tell everyone subscribed to ['me'] that nobody is logged in:
+      // <RequireAuth> redirects to /login. Not clear() first — it would drop
+      // the ['me'] query itself, and the new null would land in a fresh
+      // query that the mounted components are not subscribed to.
       queryClient.setQueryData(authKeys.me, null)
+      // Then forget the previous user's data, so the next one never sees it.
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== authKeys.me[0],
+      })
     },
   })
 }

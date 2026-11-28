@@ -39,7 +39,8 @@
     "db:migrate": "npm run db:migrate -w apps/api",
     "db:seed": "npm run db:seed -w apps/api",
     "db:studio": "npm run db:studio -w apps/api",
-    "test": "npm run test -w apps/api"
+    "test": "npm run test -w apps/api",
+    "test:e2e": "npm run test -w apps/e2e"
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [

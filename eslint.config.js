@@ -10,7 +10,12 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/node_modules']),
+  globalIgnores([
+    '**/dist',
+    '**/node_modules',
+    '**/test-results',
+    '**/playwright-report',
+  ]),
   js.configs.recommended,
   tseslint.configs.recommended,
   importX.flatConfigs.recommended,
@@ -68,7 +73,7 @@ export default defineConfig([
     languageOptions: { ecmaVersion: 2020, globals: globals.browser },
   },
   {
-    files: ['apps/api/**/*.ts', 'packages/shared/**/*.ts'],
+    files: ['apps/api/**/*.ts', 'apps/e2e/**/*.ts', 'packages/shared/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
   {
